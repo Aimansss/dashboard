@@ -25,7 +25,7 @@ jobs:
           node-version: '18'
 
       - name: Install dependencies
-        run: npm ci
+        run: cd dronatrix-leaderboard & npm ci
 
       - name: Build VitePress
         run: cd dronatrix-leaderboard & npm run build
