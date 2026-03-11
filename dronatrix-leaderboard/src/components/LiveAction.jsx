@@ -8,8 +8,11 @@ const LiveAction = ({ state, updateTeamRound, setCurrentTeamIndex, setCurrentRou
   const currentTeam = teams[currentTeamIndex];
 
   const [showModeReveal, setShowModeReveal] = useState(true);
+  const [showModeExplanation, setShowModeExplanation] = useState(false);
+  const [showDeclarationPhase, setShowDeclarationPhase] = useState(false);
   const [showSuccessFail, setShowSuccessFail] = useState(false);
   const [showResult, setShowResult] = useState(false);
+  const [showGrandFinale, setShowGrandFinale] = useState(false);
   const [resultData, setResultData] = useState(null);
   const [pilot, setPilot] = useState('');
   const [mode, setMode] = useState('');
@@ -22,6 +25,7 @@ const LiveAction = ({ state, updateTeamRound, setCurrentTeamIndex, setCurrentRou
   const [milliseconds, setMilliseconds] = useState('');
   const [useTimer, setUseTimer] = useState(true); // For R2/R4: choose timer or manual
   const [error, setError] = useState('');
+  const [teamDeclarations, setTeamDeclarations] = useState({});
 
   const availablePilots = getAvailablePilots(currentTeam, currentRound);
   const isDeclarationRound = currentRound === 2 || currentRound === 4;
@@ -39,12 +43,27 @@ const LiveAction = ({ state, updateTeamRound, setCurrentTeamIndex, setCurrentRou
     return () => clearInterval(interval);
   }, [timerRunning]);
 
-  // Reset mode reveal when round changes
+  // Show mode explanation first, then declaration phase when entering R2 or R4
   useEffect(() => {
     if (isDeclarationRound && currentTeamIndex === 0) {
-      setShowModeReveal(true);
+      // Check if all teams have declared
+      const allDeclared = teams.every(team =>
+        team.rounds[currentRound].mode &&
+        (team.rounds[currentRound].mode === 'SAFE' || team.rounds[currentRound].rival)
+      );
+
+      if (!allDeclared) {
+        // Show explanation first before declaration
+        setShowModeExplanation(true);
+        setShowDeclarationPhase(false);
+        setShowModeReveal(false);
+      } else {
+        setShowModeExplanation(false);
+        setShowDeclarationPhase(false);
+        setShowModeReveal(true);
+      }
     }
-  }, [currentRound, currentTeamIndex, isDeclarationRound]);
+  }, [currentRound, currentTeamIndex, isDeclarationRound, teams]);
 
   // Auto-select pilot for R2 and R4
   useEffect(() => {
@@ -54,6 +73,16 @@ const LiveAction = ({ state, updateTeamRound, setCurrentTeamIndex, setCurrentRou
       setPilot('');
     }
   }, [currentTeam, currentRound, isDeclarationRound, availablePilots]);
+
+  // Check if competition is complete and show grand finale
+  useEffect(() => {
+    if (currentRound === 4 && currentTeamIndex >= teams.length - 1) {
+      const allTeamsComplete = teams.every(team => team.rounds[4].time !== null);
+      if (allTeamsComplete) {
+        setShowGrandFinale(true);
+      }
+    }
+  }, [currentRound, currentTeamIndex, teams]);
 
   const getReferenceTime = () => {
     if (currentRound === 2) return currentTeam.rounds[1].time;
@@ -249,9 +278,13 @@ const LiveAction = ({ state, updateTeamRound, setCurrentTeamIndex, setCurrentRou
     if (currentTeamIndex < teams.length - 1) {
       setCurrentTeamIndex(currentTeamIndex + 1);
     } else {
+      // All teams in this round are done
       if (currentRound < 4) {
         setCurrentRound(currentRound + 1);
         setCurrentTeamIndex(0);
+      } else {
+        // Competition complete! Show grand finale
+        setShowGrandFinale(true);
       }
     }
   };
@@ -303,6 +336,420 @@ const LiveAction = ({ state, updateTeamRound, setCurrentTeamIndex, setCurrentRou
   };
 
   const isRoundComplete = teams.every(t => t.rounds[currentRound].time !== null);
+
+  // GRAND FINALE SCREEN - Top 3 Winners
+  if (showGrandFinale) {
+    const rankedTeams = [...teams].sort((a, b) => b.totalPoints - a.totalPoints);
+    const topThree = rankedTeams.slice(0, 3);
+
+    return (
+      <div className="h-full flex items-center justify-center p-8 bg-dark-950 relative overflow-hidden">
+        {/* Epic Background */}
+        <div className="absolute inset-0 pointer-events-none">
+          <div className="absolute top-0 left-0 w-full h-full bg-gradient-to-b from-accent-gold/10 via-transparent to-transparent"></div>
+          <div className="absolute w-[600px] h-[600px] bg-accent-gold/20 rounded-full blur-3xl top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 animate-pulse"></div>
+        </div>
+
+        <motion.div
+          initial={{ opacity: 0, scale: 0.8 }}
+          animate={{ opacity: 1, scale: 1 }}
+          transition={{ duration: 0.6, type: "spring" }}
+          className="relative z-10 w-full max-w-6xl"
+        >
+          {/* Title */}
+          <motion.div
+            initial={{ y: -50, opacity: 0 }}
+            animate={{ y: 0, opacity: 1 }}
+            transition={{ delay: 0.2 }}
+            className="text-center mb-12"
+          >
+            <h1 className="text-7xl font-black text-primary uppercase tracking-tight mb-4" style={{textShadow: '0 0 30px rgba(0,255,255,0.6)'}}>
+              🏆 DRONATRIX 2026 🏆
+            </h1>
+            <p className="text-2xl text-gray-400 uppercase tracking-widest">Champions</p>
+          </motion.div>
+
+          {/* Top 3 Podium */}
+          <div className="grid grid-cols-3 gap-6 items-end mb-12">
+            {/* 2nd Place */}
+            <motion.div
+              initial={{ y: 100, opacity: 0 }}
+              animate={{ y: 0, opacity: 1 }}
+              transition={{ delay: 0.4, type: "spring" }}
+              className="relative"
+            >
+              <div className="bg-gradient-to-b from-accent-silver/20 to-dark-800 border-2 border-accent-silver p-8 text-center h-[280px] flex flex-col justify-center">
+                <div className="text-6xl mb-4">🥈</div>
+                <div className="text-7xl font-black text-accent-silver mb-2">2</div>
+                <div className="text-2xl font-black text-gray-100 uppercase mb-4">{topThree[1]?.name}</div>
+                <div className="text-4xl font-black font-mono text-accent-silver">
+                  {topThree[1]?.totalPoints > 0 ? '+' : ''}{topThree[1]?.totalPoints}
+                </div>
+              </div>
+            </motion.div>
+
+            {/* 1st Place - Tallest */}
+            <motion.div
+              initial={{ y: 100, opacity: 0 }}
+              animate={{ y: 0, opacity: 1 }}
+              transition={{ delay: 0.6, type: "spring" }}
+              className="relative"
+            >
+              <div className="bg-gradient-to-b from-accent-gold/20 to-dark-800 border-4 border-accent-gold p-8 text-center h-[380px] flex flex-col justify-center shadow-2xl shadow-accent-gold/50">
+                <div className="absolute -top-16 left-1/2 -translate-x-1/2 text-8xl animate-bounce">👑</div>
+                <div className="text-8xl mb-4">🥇</div>
+                <div className="text-9xl font-black text-accent-gold mb-2" style={{textShadow: '0 0 40px rgba(255,215,0,0.8)'}}>1</div>
+                <div className="text-3xl font-black text-gray-100 uppercase mb-4">{topThree[0]?.name}</div>
+                <div className="text-5xl font-black font-mono text-accent-gold">
+                  {topThree[0]?.totalPoints > 0 ? '+' : ''}{topThree[0]?.totalPoints}
+                </div>
+              </div>
+            </motion.div>
+
+            {/* 3rd Place */}
+            <motion.div
+              initial={{ y: 100, opacity: 0 }}
+              animate={{ y: 0, opacity: 1 }}
+              transition={{ delay: 0.5, type: "spring" }}
+              className="relative"
+            >
+              <div className="bg-gradient-to-b from-accent-bronze/20 to-dark-800 border-2 border-accent-bronze p-8 text-center h-[240px] flex flex-col justify-center">
+                <div className="text-6xl mb-4">🥉</div>
+                <div className="text-7xl font-black text-accent-bronze mb-2">3</div>
+                <div className="text-2xl font-black text-gray-100 uppercase mb-4">{topThree[2]?.name}</div>
+                <div className="text-4xl font-black font-mono text-accent-bronze">
+                  {topThree[2]?.totalPoints > 0 ? '+' : ''}{topThree[2]?.totalPoints}
+                </div>
+              </div>
+            </motion.div>
+          </div>
+
+          {/* Celebration Text */}
+          <motion.div
+            initial={{ opacity: 0 }}
+            animate={{ opacity: 1 }}
+            transition={{ delay: 1 }}
+            className="text-center"
+          >
+            <p className="text-xl text-primary uppercase tracking-[0.3em] font-bold">Congratulations to all teams!</p>
+          </motion.div>
+        </motion.div>
+      </div>
+    );
+  }
+
+  // MODE EXPLANATION SCREEN - Show risks and rewards before declaration
+  if (showModeExplanation && isDeclarationRound) {
+    return (
+      <div className="h-full flex items-center justify-center p-8 bg-dark-950 relative overflow-hidden">
+        {/* Background */}
+        <div className="absolute inset-0 pointer-events-none opacity-10">
+          <div className="absolute w-[500px] h-[500px] bg-primary/30 rounded-full blur-3xl top-1/4 left-1/4 animate-pulse"></div>
+        </div>
+
+        <motion.div
+          initial={{ opacity: 0, scale: 0.9 }}
+          animate={{ opacity: 1, scale: 1 }}
+          transition={{ duration: 0.5 }}
+          className="relative z-10 w-full max-w-6xl"
+        >
+          {/* Title */}
+          <motion.div
+            initial={{ y: -30, opacity: 0 }}
+            animate={{ y: 0, opacity: 1 }}
+            transition={{ delay: 0.2 }}
+            className="text-center mb-12"
+          >
+            <h1 className="text-6xl font-black text-primary uppercase tracking-tight mb-4" style={{textShadow: '0 0 30px rgba(0,255,255,0.5)'}}>
+              ROUND {currentRound}
+            </h1>
+            <p className="text-3xl text-gray-300 uppercase tracking-wider font-bold">Know Your Risk</p>
+            <p className="text-lg text-gray-500 uppercase tracking-widest mt-2">Choose Wisely</p>
+          </motion.div>
+
+          {/* Mode Cards */}
+          <div className="grid grid-cols-3 gap-6 mb-12">
+            {Object.entries(roundModes).map(([key, config], index) => (
+              <motion.div
+                key={key}
+                initial={{ y: 50, opacity: 0 }}
+                animate={{ y: 0, opacity: 1 }}
+                transition={{ delay: 0.3 + index * 0.1, type: "spring" }}
+                className={`bg-dark-800 border-2 p-8 relative overflow-hidden ${
+                  key === 'SAFE' ? 'border-accent-success' :
+                  key === 'RISKY' || key === 'CHALLENGE' ? 'border-accent-warning' :
+                  'border-accent-danger'
+                }`}
+              >
+                {/* Glow effect */}
+                <div className={`absolute inset-0 opacity-5 ${
+                  key === 'SAFE' ? 'bg-accent-success' :
+                  key === 'RISKY' || key === 'CHALLENGE' ? 'bg-accent-warning' :
+                  'bg-accent-danger'
+                }`}></div>
+
+                <div className="relative z-10">
+                  <h2 className={`text-4xl font-black uppercase tracking-tight mb-4 ${config.color}`}>
+                    {config.label}
+                  </h2>
+
+                  {/* Points Display */}
+                  <div className="mb-6 pb-6 border-b-2 border-dark-700">
+                    <div className="flex items-center justify-between mb-3">
+                      <span className="text-sm text-gray-500 uppercase tracking-wider">Success</span>
+                      <span className="text-4xl font-black text-accent-success">+{config.successPoints}</span>
+                    </div>
+                    <div className="flex items-center justify-between">
+                      <span className="text-sm text-gray-500 uppercase tracking-wider">Failure</span>
+                      <span className="text-4xl font-black text-accent-danger">{config.failPoints}</span>
+                    </div>
+                  </div>
+
+                  {/* Challenge/Target */}
+                  <div className="text-sm text-gray-400 space-y-2">
+                    {currentRound === 2 && (
+                      <>
+                        {key === 'SAFE' && <p>• Beat your Round 1 time</p>}
+                        {key === 'RISKY' && <p>• Beat your Round 1 time by <span className="text-accent-warning font-bold">10 seconds</span></p>}
+                        {key === 'ALL_IN' && <p>• Beat the <span className="text-accent-danger font-bold">FASTEST Round 1 time</span></p>}
+                      </>
+                    )}
+                    {currentRound === 4 && (
+                      <>
+                        {key === 'SAFE' && <p>• Beat your Round 3 time by <span className="text-accent-success font-bold">5 seconds</span></p>}
+                        {key === 'CHALLENGE' && (
+                          <>
+                            <p>• Beat a rival's Round 3 time</p>
+                            <p className="text-accent-warning font-bold">• Rival gets {config.rivalPenalty} penalty if you succeed</p>
+                          </>
+                        )}
+                        {key === 'BLOOD_MATCH' && (
+                          <>
+                            <p>• Beat the <span className="text-accent-danger font-bold">FASTEST Round 3 time</span></p>
+                            <p className="text-accent-danger font-bold">• They get {config.rivalPenalty} penalty if you succeed</p>
+                          </>
+                        )}
+                      </>
+                    )}
+                  </div>
+                </div>
+              </motion.div>
+            ))}
+          </div>
+
+          {/* Continue Button */}
+          <motion.div
+            initial={{ y: 30, opacity: 0 }}
+            animate={{ y: 0, opacity: 1 }}
+            transition={{ delay: 0.8 }}
+            className="text-center"
+          >
+            <button
+              onClick={() => {
+                setShowModeExplanation(false);
+                setShowDeclarationPhase(true);
+              }}
+              className="px-20 py-5 bg-primary text-dark-950 text-2xl font-black uppercase tracking-wider hover:bg-cyan-400 transition-all shadow-2xl shadow-primary/30"
+            >
+              PROCEED TO DECLARATION →
+            </button>
+          </motion.div>
+        </motion.div>
+      </div>
+    );
+  }
+
+  // DECLARATION PHASE - All teams declare modes before R2/R4 starts
+  if (showDeclarationPhase && isDeclarationRound) {
+    const handleSaveDeclaration = (teamId, declaration) => {
+      setTeamDeclarations(prev => ({
+        ...prev,
+        [teamId]: declaration
+      }));
+
+      // Update the team's round data
+      updateTeamRound(teams.findIndex(t => t.id === teamId), currentRound, {
+        ...teams.find(t => t.id === teamId).rounds[currentRound],
+        mode: declaration.mode,
+        rival: declaration.rival || null
+      });
+    };
+
+    const handleFinishDeclarations = () => {
+      setShowDeclarationPhase(false);
+      setShowModeReveal(true);
+    };
+
+    const allDeclared = teams.every(team =>
+      team.rounds[currentRound].mode &&
+      (team.rounds[currentRound].mode === 'SAFE' || team.rounds[currentRound].rival)
+    );
+
+    return (
+      <div className="h-full flex flex-col p-4 overflow-hidden">
+        <motion.div
+          initial={{ opacity: 0, y: -20 }}
+          animate={{ opacity: 1, y: 0 }}
+          className="mb-3 text-center"
+        >
+          <h1 className="text-3xl font-black text-primary uppercase tracking-tight mb-1">
+            ROUND {currentRound} - MODE DECLARATION
+          </h1>
+          <p className="text-sm text-gray-400 uppercase tracking-wider">All teams must declare their strategy</p>
+        </motion.div>
+
+        <div className="flex-1 overflow-hidden">
+          <div className="grid grid-cols-4 gap-3 h-full">
+            {teams.map((team, idx) => {
+              const teamDeclaration = team.rounds[currentRound];
+              const hasDeclared = teamDeclaration.mode && (teamDeclaration.mode === 'SAFE' || teamDeclaration.rival);
+
+              return (
+                <motion.div
+                  key={team.id}
+                  initial={{ opacity: 0, x: -20 }}
+                  animate={{ opacity: 1, x: 0 }}
+                  transition={{ delay: idx * 0.05 }}
+                  className={`bg-dark-800 border-2 p-2.5 flex flex-col ${
+                    hasDeclared ? 'border-accent-success' : 'border-dark-600'
+                  }`}
+                >
+                  <div className="flex items-center justify-between mb-1.5">
+                    <h3 className="text-base font-black text-gray-100 uppercase">{team.name}</h3>
+                    {hasDeclared && <div className="text-accent-success text-lg">✓</div>}
+                  </div>
+
+                  {!hasDeclared ? (
+                    <div className="space-y-1.5 flex-1 flex flex-col">
+                      <div className="grid grid-cols-1 gap-1.5">
+                        {Object.entries(roundModes).map(([key, config]) => (
+                          <button
+                            key={key}
+                            onClick={() => {
+                              if (key === 'SAFE') {
+                                handleSaveDeclaration(team.id, { mode: key, rival: null });
+                              } else {
+                                // For CHALLENGE/BLOOD_MATCH, just set mode, rival will be set below
+                                updateTeamRound(teams.findIndex(t => t.id === team.id), currentRound, {
+                                  ...team.rounds[currentRound],
+                                  mode: key
+                                });
+                              }
+                            }}
+                            className={`p-3 text-center border-2 transition-all ${
+                              teamDeclaration.mode === key
+                                ? 'bg-dark-700 border-primary'
+                                : 'bg-dark-900 border-dark-700 hover:border-primary/50'
+                            }`}
+                          >
+                            <div className={`font-black text-base uppercase mb-0.5 ${config.color}`}>
+                              {config.label}
+                            </div>
+                            <div className="text-xs text-gray-500 font-mono">
+                              {config.successPoints > 0 ? `+${config.successPoints}` : config.successPoints} / {config.failPoints}
+                            </div>
+                          </button>
+                        ))}
+                      </div>
+
+                      {teamDeclaration.mode && teamDeclaration.mode !== 'SAFE' && currentRound === 4 && (
+                        <div className="flex-1 flex flex-col">
+                          <label className="block text-[10px] font-bold text-gray-500 uppercase mb-1">
+                            {teamDeclaration.mode === 'CHALLENGE' ? 'Rival' : 'Auto'}
+                          </label>
+                          {teamDeclaration.mode === 'CHALLENGE' ? (
+                            <select
+                              value={teamDeclaration.rival || ''}
+                              onChange={(e) => handleSaveDeclaration(team.id, {
+                                mode: teamDeclaration.mode,
+                                rival: e.target.value
+                              })}
+                              className="w-full bg-dark-900 border border-dark-700 px-2 py-1 text-sm text-gray-100 focus:border-primary"
+                            >
+                              <option value="">-- Select --</option>
+                              {teams.filter(t => t.id !== team.id && t.rounds[3].time).map(t => (
+                                <option key={t.id} value={t.id}>{t.name}</option>
+                              ))}
+                            </select>
+                          ) : (
+                            <div className="bg-dark-900 border border-primary/30 px-2 py-1 text-primary text-center text-sm font-bold">
+                              {getFastestRound3Team()?.name || 'TBD'}
+                            </div>
+                          )}
+
+                          {teamDeclaration.mode === 'CHALLENGE' && teamDeclaration.rival && (
+                            <button
+                              onClick={() => handleSaveDeclaration(team.id, {
+                                mode: teamDeclaration.mode,
+                                rival: teamDeclaration.rival
+                              })}
+                              className="w-full mt-1 bg-accent-success text-dark-950 py-1 text-xs font-black uppercase"
+                            >
+                              ✓
+                            </button>
+                          )}
+
+                          {teamDeclaration.mode === 'BLOOD_MATCH' && (
+                            <button
+                              onClick={() => handleSaveDeclaration(team.id, {
+                                mode: teamDeclaration.mode,
+                                rival: getFastestRound3Team()?.id
+                              })}
+                              className="w-full mt-1 bg-accent-success text-dark-950 py-1 text-xs font-black uppercase"
+                            >
+                              ✓
+                            </button>
+                          )}
+                        </div>
+                      )}
+
+                      {currentRound === 2 && teamDeclaration.mode && teamDeclaration.mode !== 'SAFE' && (
+                        <button
+                          onClick={() => handleSaveDeclaration(team.id, {
+                            mode: teamDeclaration.mode,
+                            rival: null
+                          })}
+                          className="w-full bg-accent-success text-dark-950 py-1 text-xs font-black uppercase mt-auto"
+                        >
+                          ✓
+                        </button>
+                      )}
+                    </div>
+                  ) : (
+                    <div className="text-center py-2 flex-1 flex flex-col justify-center">
+                      <div className="text-base font-bold text-primary uppercase mb-1">
+                        {roundModes[teamDeclaration.mode].label}
+                      </div>
+                      {teamDeclaration.rival && (
+                        <div className="text-xs text-gray-400">
+                          vs {teams.find(t => t.id === parseInt(teamDeclaration.rival))?.name}
+                        </div>
+                      )}
+                    </div>
+                  )}
+                </motion.div>
+              );
+            })}
+          </div>
+        </div>
+
+        {allDeclared && (
+          <motion.div
+            initial={{ opacity: 0, y: 20 }}
+            animate={{ opacity: 1, y: 0 }}
+            className="text-center mt-3"
+          >
+            <button
+              onClick={handleFinishDeclarations}
+              className="px-16 py-3 bg-primary text-dark-950 text-xl font-black uppercase tracking-wider hover:bg-cyan-400 transition-all"
+            >
+              START ROUND {currentRound} →
+            </button>
+          </motion.div>
+        )}
+      </div>
+    );
+  }
 
   // SUCCESS/FAIL SCREEN (first screen after submit in declaration rounds)
   if (showSuccessFail && resultData) {
