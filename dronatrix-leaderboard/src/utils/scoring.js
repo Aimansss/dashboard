@@ -72,7 +72,7 @@ export const calculateRound4Points = (team, allTeams) => {
   let rivalPenalty = 0;
 
   if (mode === 'SAFE') {
-    success = round4Time <= round3Time - 5;
+    success = round4Time <= round3Time - 20;
   } else if (mode === 'CHALLENGE' && rivalId) {
     const rival = allTeams.find(t => t.id === rivalId);
     const rivalTime = rival?.rounds[3].time;

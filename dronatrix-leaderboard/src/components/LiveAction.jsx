@@ -13,6 +13,7 @@ const LiveAction = ({ state, updateTeamRound, setCurrentTeamIndex, setCurrentRou
   const [showDeclarationPhase, setShowDeclarationPhase] = useState(false);
   const [showSuccessFail, setShowSuccessFail] = useState(false);
   const [showResult, setShowResult] = useState(false);
+  const [showFinalLeaderboard, setShowFinalLeaderboard] = useState(false);
   const [showGrandFinale, setShowGrandFinale] = useState(false);
   const [resultData, setResultData] = useState(null);
   const [pilot, setPilot] = useState('');
@@ -53,18 +54,18 @@ const LiveAction = ({ state, updateTeamRound, setCurrentTeamIndex, setCurrentRou
         (team.rounds[currentRound].mode === 'SAFE' || team.rounds[currentRound].rival)
       );
 
-      if (!allDeclared) {
-        // Show explanation first before declaration
+      if (!allDeclared && !showDeclarationPhase) {
+        // Show explanation first before declaration ONLY if we haven't started declaring yet
         setShowModeExplanation(true);
         setShowDeclarationPhase(false);
         setShowModeReveal(false);
-      } else {
+      } else if (allDeclared) {
         setShowModeExplanation(false);
         setShowDeclarationPhase(false);
         setShowModeReveal(true);
       }
     }
-  }, [currentRound, currentTeamIndex, isDeclarationRound, teams]);
+  }, [currentRound, currentTeamIndex, isDeclarationRound]);
 
   // Auto-select pilot for R2 and R4
   useEffect(() => {
@@ -74,6 +75,22 @@ const LiveAction = ({ state, updateTeamRound, setCurrentTeamIndex, setCurrentRou
       setPilot('');
     }
   }, [currentTeam, currentRound, isDeclarationRound, availablePilots]);
+
+  // Auto-fill mode and rival from declaration for R2 and R4
+  useEffect(() => {
+    if (isDeclarationRound) {
+      const teamRound = currentTeam.rounds[currentRound];
+      if (teamRound.mode) {
+        setMode(teamRound.mode);
+      }
+      if (teamRound.rival) {
+        setRival(teamRound.rival.toString());
+      }
+    } else {
+      setMode('');
+      setRival('');
+    }
+  }, [currentTeam, currentRound, isDeclarationRound]);
 
   // Check if competition is complete and show grand finale
   useEffect(() => {
@@ -147,8 +164,8 @@ const LiveAction = ({ state, updateTeamRound, setCurrentTeamIndex, setCurrentRou
       const r3Time = teamData.rounds[3].time;
       if (mode === 'SAFE') {
         targetTime = r3Time;
-        targetDescription = 'Beat R3 by 5s';
-        success = finalTime <= r3Time - 5;
+        targetDescription = 'Beat R3 by 20s';
+        success = finalTime <= r3Time - 20;
       } else if (mode === 'CHALLENGE' && rival) {
         const rivalTeam = teams.find(t => t.id === parseInt(rival));
         targetTime = rivalTeam?.rounds[3].time;
@@ -297,7 +314,7 @@ const LiveAction = ({ state, updateTeamRound, setCurrentTeamIndex, setCurrentRou
       if (mode === 'ALL_IN') return 'Beat the fastest Round 1 time';
     }
     if (currentRound === 4) {
-      if (mode === 'SAFE') return 'Beat your Round 3 time by 5 seconds';
+      if (mode === 'SAFE') return 'Beat your Round 3 time by 20 seconds';
       if (mode === 'CHALLENGE') {
         const rivalTeam = teams.find(t => t.id === parseInt(rival));
         return rivalTeam ? `Beat ${rivalTeam.name}'s Round 3 time` : 'Select a rival to challenge';
@@ -322,7 +339,7 @@ const LiveAction = ({ state, updateTeamRound, setCurrentTeamIndex, setCurrentRou
     }
 
     if (currentRound === 4) {
-      if (mode === 'SAFE') return `Beat ${formatTime(refTime - 5)} (5s faster)`;
+      if (mode === 'SAFE') return `Beat ${formatTime(refTime - 20)} (20s faster than R3)`;
       if (mode === 'CHALLENGE' && rival) {
         const rivalTeam = teams.find(t => t.id === parseInt(rival));
         return `Beat ${formatTime(rivalTeam?.rounds[3].time)} (${rivalTeam?.name})`;
@@ -392,95 +409,106 @@ const LiveAction = ({ state, updateTeamRound, setCurrentTeamIndex, setCurrentRou
     const topThree = rankedTeams.slice(0, 3);
 
     return (
-      <div className="h-full flex items-center justify-center p-8 bg-gradient-to-br from-gray-50 to-gray-100 relative overflow-hidden">
-        {/* Epic Background */}
-        <div className="absolute inset-0 pointer-events-none">
-          <div className="absolute top-0 left-0 w-full h-full bg-gradient-to-b from-accent-gold/5 via-transparent to-transparent"></div>
-          <div className="absolute w-[600px] h-[600px] bg-accent-gold/10 rounded-full blur-3xl top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 animate-pulse"></div>
+      <div className="h-full flex items-center justify-center p-8 bg-gray-900 relative overflow-hidden">
+        {/* Professional Background */}
+        <div className="absolute inset-0 pointer-events-none opacity-20">
+          <div className="absolute w-[800px] h-[800px] bg-primary/10 rounded-full blur-3xl top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2"></div>
         </div>
 
         <motion.div
-          initial={{ opacity: 0, scale: 0.8 }}
-          animate={{ opacity: 1, scale: 1 }}
-          transition={{ duration: 0.6, type: "spring" }}
-          className="relative z-10 w-full max-w-6xl"
+          initial={{ opacity: 0, y: 20 }}
+          animate={{ opacity: 1, y: 0 }}
+          transition={{ duration: 0.6 }}
+          className="relative z-10 w-full max-w-7xl"
         >
           {/* Title */}
           <motion.div
-            initial={{ y: -50, opacity: 0 }}
-            animate={{ y: 0, opacity: 1 }}
+            initial={{ opacity: 0 }}
+            animate={{ opacity: 1 }}
             transition={{ delay: 0.2 }}
-            className="text-center mb-12"
+            className="text-center mb-16"
           >
-            <h1 className="text-7xl font-black text-primary uppercase tracking-tight mb-4">
-              🏆 DRONATRIX 2026 🏆
+            <div className="inline-block mb-4">
+              <div className="h-1 w-20 bg-primary mx-auto mb-6"></div>
+            </div>
+            <h1 className="text-8xl font-black text-gray-100 uppercase tracking-tight mb-3">
+              DRONATRIX 2026
             </h1>
-            <p className="text-2xl text-gray-400 uppercase tracking-widest">Champions</p>
+            <p className="text-2xl text-primary uppercase tracking-[0.4em] font-bold">Final Standings</p>
           </motion.div>
 
           {/* Top 3 Podium */}
-          <div className="grid grid-cols-3 gap-6 items-end mb-12">
+          <div className="grid grid-cols-3 gap-8 items-end mb-16">
             {/* 2nd Place */}
             <motion.div
-              initial={{ y: 100, opacity: 0 }}
+              initial={{ y: 50, opacity: 0 }}
               animate={{ y: 0, opacity: 1 }}
-              transition={{ delay: 0.4, type: "spring" }}
+              transition={{ delay: 0.4 }}
               className="relative"
             >
-              <div className="bg-gray-800 border-2 border-accent-silver p-8 text-center h-[280px] flex flex-col justify-center shadow-lg rounded-xl">
-                <div className="text-6xl mb-4">🥈</div>
-                <div className="text-7xl font-black text-accent-silver mb-2">2</div>
-                <div className="text-2xl font-black text-gray-800 uppercase mb-4">{topThree[1]?.name}</div>
-                <div className="text-4xl font-black font-mono text-accent-silver">
+              <div className="absolute -top-6 left-1/2 -translate-x-1/2 px-6 py-2 bg-accent-silver text-gray-900 font-black text-sm uppercase tracking-wider rounded-lg">
+                2nd Place
+              </div>
+              <div className="bg-gray-800 border-l-4 border-accent-silver p-10 text-center h-[280px] flex flex-col justify-center shadow-xl rounded-xl">
+                <div className="text-8xl font-black text-accent-silver mb-4 font-mono">#2</div>
+                <div className="text-3xl font-black text-gray-100 uppercase mb-4 tracking-wide">{topThree[1]?.name}</div>
+                <div className="text-5xl font-black font-mono text-accent-silver">
                   {topThree[1]?.totalPoints > 0 ? '+' : ''}{topThree[1]?.totalPoints}
                 </div>
+                <div className="text-xs text-gray-500 uppercase tracking-widest mt-2">Points</div>
               </div>
             </motion.div>
 
             {/* 1st Place - Tallest */}
             <motion.div
-              initial={{ y: 100, opacity: 0 }}
+              initial={{ y: 50, opacity: 0 }}
               animate={{ y: 0, opacity: 1 }}
-              transition={{ delay: 0.6, type: "spring" }}
+              transition={{ delay: 0.6 }}
               className="relative"
             >
-              <div className="bg-gray-800 border-4 border-accent-gold p-8 text-center h-[380px] flex flex-col justify-center shadow-2xl shadow-accent-gold/30">
-                <div className="absolute -top-16 left-1/2 -translate-x-1/2 text-8xl animate-bounce">👑</div>
-                <div className="text-8xl mb-4">🥇</div>
-                <div className="text-9xl font-black text-accent-gold mb-2">1</div>
-                <div className="text-3xl font-black text-gray-800 uppercase mb-4">{topThree[0]?.name}</div>
-                <div className="text-5xl font-black font-mono text-accent-gold">
+              <div className="absolute -top-6 left-1/2 -translate-x-1/2 px-8 py-2 bg-accent-gold text-gray-900 font-black text-sm uppercase tracking-wider rounded-lg shadow-lg">
+                Champion
+              </div>
+              <div className="bg-gray-800 border-l-4 border-accent-gold p-10 text-center h-[380px] flex flex-col justify-center shadow-2xl shadow-accent-gold/20 rounded-xl">
+                <div className="text-9xl font-black text-accent-gold mb-4 font-mono">#1</div>
+                <div className="text-4xl font-black text-gray-100 uppercase mb-6 tracking-wide">{topThree[0]?.name}</div>
+                <div className="text-6xl font-black font-mono text-accent-gold">
                   {topThree[0]?.totalPoints > 0 ? '+' : ''}{topThree[0]?.totalPoints}
                 </div>
+                <div className="text-xs text-gray-500 uppercase tracking-widest mt-3">Points</div>
               </div>
             </motion.div>
 
             {/* 3rd Place */}
             <motion.div
-              initial={{ y: 100, opacity: 0 }}
+              initial={{ y: 50, opacity: 0 }}
               animate={{ y: 0, opacity: 1 }}
-              transition={{ delay: 0.5, type: "spring" }}
+              transition={{ delay: 0.5 }}
               className="relative"
             >
-              <div className="bg-gray-800 border-2 border-accent-bronze p-8 text-center h-[240px] flex flex-col justify-center shadow-lg rounded-xl">
-                <div className="text-6xl mb-4">🥉</div>
-                <div className="text-7xl font-black text-accent-bronze mb-2">3</div>
-                <div className="text-2xl font-black text-gray-800 uppercase mb-4">{topThree[2]?.name}</div>
-                <div className="text-4xl font-black font-mono text-accent-bronze">
+              <div className="absolute -top-6 left-1/2 -translate-x-1/2 px-6 py-2 bg-accent-bronze text-gray-900 font-black text-sm uppercase tracking-wider rounded-lg">
+                3rd Place
+              </div>
+              <div className="bg-gray-800 border-l-4 border-accent-bronze p-10 text-center h-[240px] flex flex-col justify-center shadow-xl rounded-xl">
+                <div className="text-8xl font-black text-accent-bronze mb-4 font-mono">#3</div>
+                <div className="text-3xl font-black text-gray-100 uppercase mb-4 tracking-wide">{topThree[2]?.name}</div>
+                <div className="text-5xl font-black font-mono text-accent-bronze">
                   {topThree[2]?.totalPoints > 0 ? '+' : ''}{topThree[2]?.totalPoints}
                 </div>
+                <div className="text-xs text-gray-500 uppercase tracking-widest mt-2">Points</div>
               </div>
             </motion.div>
           </div>
 
-          {/* Celebration Text */}
+          {/* Bottom Line */}
           <motion.div
             initial={{ opacity: 0 }}
             animate={{ opacity: 1 }}
             transition={{ delay: 1 }}
             className="text-center"
           >
-            <p className="text-xl text-primary uppercase tracking-[0.3em] font-bold">Congratulations to all teams!</p>
+            <div className="h-1 w-20 bg-primary mx-auto mb-4"></div>
+            <p className="text-lg text-gray-400 uppercase tracking-[0.3em]">Competition Complete</p>
           </motion.div>
         </motion.div>
       </div>
@@ -548,10 +576,16 @@ const LiveAction = ({ state, updateTeamRound, setCurrentTeamIndex, setCurrentRou
                       <span className="text-sm text-gray-400 uppercase tracking-wider">Success</span>
                       <span className="text-4xl font-black text-accent-success">+{config.successPoints}</span>
                     </div>
-                    <div className="flex items-center justify-between">
+                    <div className="flex items-center justify-between mb-3">
                       <span className="text-sm text-gray-400 uppercase tracking-wider">Failure</span>
                       <span className="text-4xl font-black text-accent-danger">{config.failPoints}</span>
                     </div>
+                    {config.rivalPenalty && config.rivalPenalty !== 0 && (
+                      <div className="flex items-center justify-between mt-3 pt-3 border-t border-gray-700">
+                        <span className="text-sm text-accent-warning uppercase tracking-wider font-bold">Rival Gets</span>
+                        <span className="text-3xl font-black text-accent-warning">{config.rivalPenalty}</span>
+                      </div>
+                    )}
                   </div>
 
                   {/* Challenge/Target */}
@@ -565,7 +599,7 @@ const LiveAction = ({ state, updateTeamRound, setCurrentTeamIndex, setCurrentRou
                     )}
                     {currentRound === 4 && (
                       <>
-                        {key === 'SAFE' && <p>• Beat your Round 3 time by <span className="text-accent-success font-bold">5 seconds</span></p>}
+                        {key === 'SAFE' && <p>• Beat your Round 3 time by <span className="text-accent-success font-bold">20 seconds</span></p>}
                         {key === 'CHALLENGE' && (
                           <>
                             <p>• Beat a rival's Round 3 time</p>
@@ -598,7 +632,7 @@ const LiveAction = ({ state, updateTeamRound, setCurrentTeamIndex, setCurrentRou
                 setShowModeExplanation(false);
                 setShowDeclarationPhase(true);
               }}
-              className="px-20 py-5 bg-primary text-dark-950 text-2xl font-black uppercase tracking-wider hover:bg-cyan-400 transition-all shadow-2xl shadow-primary/30"
+              className="px-20 py-5 bg-primary text-white text-2xl font-black uppercase tracking-wider hover:bg-primary-dark transition-all shadow-2xl shadow-primary/30 rounded-lg"
             >
               PROCEED TO DECLARATION →
             </button>
@@ -608,31 +642,60 @@ const LiveAction = ({ state, updateTeamRound, setCurrentTeamIndex, setCurrentRou
     );
   }
 
+  // Handler for declaration - defined outside to avoid stale closure
+  const handleSaveDeclaration = (teamId, declaration) => {
+    console.log(`handleSaveDeclaration called: teamId=${teamId}, mode=${declaration.mode}, rival=${declaration.rival}`);
+
+    setTeamDeclarations(prev => ({
+      ...prev,
+      [teamId]: declaration
+    }));
+
+    // Update the team's round data - updateTeamRound expects teamId, not teamIndex!
+    const team = teams.find(t => t.id === teamId);
+    const rivalValue = declaration.rival !== undefined ? declaration.rival : null;
+    console.log(`Updating team ${teamId} with mode=${declaration.mode}, rival=${rivalValue}`);
+
+    updateTeamRound(teamId, currentRound, {
+      ...team.rounds[currentRound],
+      mode: declaration.mode,
+      rival: rivalValue
+    });
+  };
+
   // DECLARATION PHASE - All teams declare modes before R2/R4 starts
   if (showDeclarationPhase && isDeclarationRound) {
-    const handleSaveDeclaration = (teamId, declaration) => {
-      setTeamDeclarations(prev => ({
-        ...prev,
-        [teamId]: declaration
-      }));
-
-      // Update the team's round data
-      updateTeamRound(teams.findIndex(t => t.id === teamId), currentRound, {
-        ...teams.find(t => t.id === teamId).rounds[currentRound],
-        mode: declaration.mode,
-        rival: declaration.rival || null
-      });
-    };
 
     const handleFinishDeclarations = () => {
       setShowDeclarationPhase(false);
       setShowModeReveal(true);
     };
 
-    const allDeclared = teams.every(team =>
-      team.rounds[currentRound].mode &&
-      (team.rounds[currentRound].mode === 'SAFE' || team.rounds[currentRound].rival)
-    );
+    // Check declarations from local state, not from teams prop (which updates async)
+    console.log('teamDeclarations:', teamDeclarations);
+    const allDeclared = teams.every(team => {
+      const declaration = teamDeclarations[team.id];
+      console.log(`Checking team ${team.name} (id=${team.id}):`, declaration);
+
+      if (!declaration) {
+        console.log(`  -> FALSE: No declaration yet`);
+        return false; // No declaration yet
+      }
+
+      if (currentRound === 2) {
+        // Round 2: Just need a mode selected
+        const result = !!declaration.mode;
+        console.log(`  -> Round 2 result: ${result} (has mode: ${!!declaration.mode})`);
+        return result;
+      } else {
+        // Round 4: Need mode AND (SAFE or rival selected)
+        const hasRival = declaration.rival !== null && declaration.rival !== undefined;
+        const result = !!declaration.mode && (declaration.mode === 'SAFE' || hasRival);
+        console.log(`  -> Round 4 result: ${result} (mode=${declaration.mode}, isSafe=${declaration.mode === 'SAFE'}, hasRival=${hasRival}, rival=${declaration.rival})`);
+        return result;
+      }
+    });
+    console.log(`All declared: ${allDeclared}`);
 
     return (
       <div className="h-full flex flex-col p-4 overflow-hidden">
@@ -651,15 +714,16 @@ const LiveAction = ({ state, updateTeamRound, setCurrentTeamIndex, setCurrentRou
           <div className="grid grid-cols-4 gap-3 h-full">
             {teams.map((team, idx) => {
               const teamDeclaration = team.rounds[currentRound];
-              const hasDeclared = teamDeclaration.mode && (teamDeclaration.mode === 'SAFE' || teamDeclaration.rival);
+              // Never mark as declared - allow changing until "START ROUND" button
+              const hasDeclared = false;
 
               return (
                 <motion.div
-                  key={team.id}
+                  key={`${team.id}-${teamDeclaration.mode}`}
                   initial={{ opacity: 0, x: -20 }}
                   animate={{ opacity: 1, x: 0 }}
                   transition={{ delay: idx * 0.05 }}
-                  className={`bg-gray-700 border-2 p-2.5 flex flex-col ${
+                  className={`bg-gray-700 border-2 p-2.5 flex flex-col rounded-xl ${
                     hasDeclared ? 'border-accent-success' : 'border-gray-700'
                   }`}
                 >
@@ -675,94 +739,69 @@ const LiveAction = ({ state, updateTeamRound, setCurrentTeamIndex, setCurrentRou
                           <button
                             key={key}
                             onClick={() => {
-                              if (key === 'SAFE') {
-                                handleSaveDeclaration(team.id, { mode: key, rival: null });
-                              } else {
-                                // For CHALLENGE/BLOOD_MATCH, just set mode, rival will be set below
-                                updateTeamRound(teams.findIndex(t => t.id === team.id), currentRound, {
-                                  ...team.rounds[currentRound],
-                                  mode: key
-                                });
-                              }
+                              // Auto-set rival for BLOOD_MATCH, null for CHALLENGE, N/A for SAFE
+                              const fastestTeam = getFastestRound3Team();
+                              console.log(`Mode button clicked: ${key}, fastestTeam=`, fastestTeam);
+                              const rival = (key === 'BLOOD_MATCH' && currentRound === 4)
+                                ? fastestTeam?.id || null
+                                : null;
+                              console.log(`Calculated rival for team ${team.id}, mode ${key}: ${rival}`);
+                              handleSaveDeclaration(team.id, { mode: key, rival });
                             }}
-                            className={`p-3 text-center border-2 transition-all ${
+                            className={`p-3 text-center border-2 transition-all rounded-lg ${
                               teamDeclaration.mode === key
-                                ? 'bg-gray-700 border-primary'
+                                ? 'bg-primary border-primary'
                                 : 'bg-gray-800 border-gray-700 hover:border-primary/50'
                             }`}
                           >
-                            <div className={`font-black text-base uppercase mb-0.5 ${config.color}`}>
+                            <div className={`font-black text-base uppercase mb-0.5 ${teamDeclaration.mode === key ? 'text-white' : config.color}`}>
                               {config.label}
                             </div>
-                            <div className="text-xs text-gray-400 font-mono">
+                            <div className={`text-xs font-mono ${teamDeclaration.mode === key ? 'text-white' : 'text-gray-400'}`}>
                               {config.successPoints > 0 ? `+${config.successPoints}` : config.successPoints} / {config.failPoints}
+                              {config.rivalPenalty && config.rivalPenalty !== 0 && (
+                                <span className="text-accent-warning font-bold"> ({config.rivalPenalty} rival)</span>
+                              )}
                             </div>
                           </button>
                         ))}
                       </div>
 
                       {teamDeclaration.mode && teamDeclaration.mode !== 'SAFE' && currentRound === 4 && (
-                        <div className="flex-1 flex flex-col">
-                          <label className="block text-[10px] font-bold text-gray-400 uppercase mb-1">
-                            {teamDeclaration.mode === 'CHALLENGE' ? 'Rival' : 'Auto'}
+                        <div className="flex-1 flex flex-col mt-2">
+                          <label className="block text-xs font-bold text-gray-400 uppercase mb-1.5">
+                            {teamDeclaration.mode === 'CHALLENGE' ? 'Select Rival' : 'Target (Auto)'}
                           </label>
                           {teamDeclaration.mode === 'CHALLENGE' ? (
-                            <select
-                              value={teamDeclaration.rival || ''}
-                              onChange={(e) => handleSaveDeclaration(team.id, {
-                                mode: teamDeclaration.mode,
-                                rival: e.target.value
-                              })}
-                              className="w-full bg-gray-800 border border-gray-700 px-2 py-1 text-sm text-gray-100 focus:border-primary"
-                            >
-                              <option value="">-- Select --</option>
-                              {teams.filter(t => t.id !== team.id && t.rounds[3].time).map(t => (
-                                <option key={t.id} value={t.id}>{t.name}</option>
-                              ))}
-                            </select>
+                            <>
+                              <select
+                                value={teamDeclaration.rival || ''}
+                                onChange={(e) => {
+                                  // Auto-save rival selection for CHALLENGE mode
+                                  const rivalId = e.target.value ? parseInt(e.target.value) : null;
+                                  console.log(`Rival dropdown changed for team ${team.id}: ${rivalId}`);
+                                  handleSaveDeclaration(team.id, {
+                                    mode: teamDeclaration.mode,
+                                    rival: rivalId
+                                  });
+                                }}
+                                className="w-full bg-gray-800 border-2 border-gray-700 px-2 py-2 text-sm text-gray-100 focus:border-primary rounded-lg font-bold"
+                              >
+                                <option value="">-- Choose Rival --</option>
+                                {teams.filter(t => t.id !== team.id && t.rounds[3].time).map(t => (
+                                  <option key={t.id} value={t.id}>{t.name}</option>
+                                ))}
+                              </select>
+                            </>
                           ) : (
-                            <div className="bg-gray-800 border border-primary/30 px-2 py-1 text-primary text-center text-sm font-bold">
+                            <div className="bg-gray-800 border border-primary/30 px-2 py-2 text-primary text-center text-sm font-bold rounded-lg">
                               {getFastestRound3Team()?.name || 'TBD'}
                             </div>
                           )}
 
-                          {teamDeclaration.mode === 'CHALLENGE' && teamDeclaration.rival && (
-                            <button
-                              onClick={() => handleSaveDeclaration(team.id, {
-                                mode: teamDeclaration.mode,
-                                rival: teamDeclaration.rival
-                              })}
-                              className="w-full mt-1 bg-accent-success text-dark-950 py-1 text-xs font-black uppercase"
-                            >
-                              ✓
-                            </button>
-                          )}
-
-                          {teamDeclaration.mode === 'BLOOD_MATCH' && (
-                            <button
-                              onClick={() => handleSaveDeclaration(team.id, {
-                                mode: teamDeclaration.mode,
-                                rival: getFastestRound3Team()?.id
-                              })}
-                              className="w-full mt-1 bg-accent-success text-dark-950 py-1 text-xs font-black uppercase"
-                            >
-                              ✓
-                            </button>
-                          )}
                         </div>
                       )}
 
-                      {currentRound === 2 && teamDeclaration.mode && teamDeclaration.mode !== 'SAFE' && (
-                        <button
-                          onClick={() => handleSaveDeclaration(team.id, {
-                            mode: teamDeclaration.mode,
-                            rival: null
-                          })}
-                          className="w-full bg-accent-success text-dark-950 py-1 text-xs font-black uppercase mt-auto"
-                        >
-                          ✓
-                        </button>
-                      )}
                     </div>
                   ) : (
                     <div className="text-center py-2 flex-1 flex flex-col justify-center">
@@ -790,7 +829,7 @@ const LiveAction = ({ state, updateTeamRound, setCurrentTeamIndex, setCurrentRou
           >
             <button
               onClick={handleFinishDeclarations}
-              className="px-16 py-3 bg-primary text-dark-950 text-xl font-black uppercase tracking-wider hover:bg-cyan-400 transition-all rounded-lg"
+              className="px-16 py-3 bg-primary text-white text-xl font-black uppercase tracking-wider hover:bg-primary-dark transition-all rounded-lg shadow-lg"
             >
               START ROUND {currentRound} →
             </button>
@@ -882,7 +921,7 @@ const LiveAction = ({ state, updateTeamRound, setCurrentTeamIndex, setCurrentRou
               setShowSuccessFail(false);
               setShowResult(true);
             }}
-            className="w-full mt-1 px-8 py-5 bg-primary text-dark-950 text-base font-black uppercase tracking-[0.3em] hover:bg-cyan-400 transition-colors"
+            className="w-full mt-1 px-8 py-5 bg-primary text-white text-base font-black uppercase tracking-[0.3em] hover:bg-cyan-400 transition-colors"
           >
             VIEW STANDINGS →
           </motion.button>
@@ -1042,7 +1081,7 @@ const LiveAction = ({ state, updateTeamRound, setCurrentTeamIndex, setCurrentRou
         <div className="text-center">
           <button
             onClick={handleNextTeam}
-            className="px-16 py-4 bg-primary text-dark-950 text-xl font-bold uppercase tracking-wider hover:bg-primary-light transition-all rounded-lg"
+            className="px-16 py-4 bg-primary text-white text-xl font-bold uppercase tracking-wider hover:bg-primary-light transition-all rounded-lg"
           >
             {currentTeamIndex < teams.length - 1 ? 'NEXT TEAM' : 'FINISH ROUND'}
           </button>
@@ -1089,7 +1128,7 @@ const LiveAction = ({ state, updateTeamRound, setCurrentTeamIndex, setCurrentRou
                   if (key === 'ALL_IN') description = 'Beat fastest Round 1';
                 }
                 if (currentRound === 4) {
-                  if (key === 'SAFE') description = 'Beat R3 by 5 seconds';
+                  if (key === 'SAFE') description = 'Beat R3 by 20 seconds';
                   if (key === 'CHALLENGE') description = 'Beat rival Round 3';
                   if (key === 'BLOOD_MATCH') description = 'Beat #1 Round 3';
                 }
@@ -1135,7 +1174,7 @@ const LiveAction = ({ state, updateTeamRound, setCurrentTeamIndex, setCurrentRou
             <div className="text-center mt-8">
               <button
                 onClick={() => setShowModeReveal(false)}
-                className="px-16 py-5 bg-primary text-dark-950 text-2xl font-black uppercase tracking-wider hover:bg-primary-light transition-all rounded-lg"
+                className="px-16 py-5 bg-primary text-white text-2xl font-black uppercase tracking-wider hover:bg-primary-light transition-all rounded-lg"
               >
                 START ROUND {currentRound}
               </button>
@@ -1265,14 +1304,17 @@ const LiveAction = ({ state, updateTeamRound, setCurrentTeamIndex, setCurrentRou
                   setShowModeReveal(true);
                 }
               }}
-              className="px-16 py-5 bg-primary text-dark-950 text-2xl font-black uppercase tracking-wider hover:bg-primary-light transition-all rounded-lg"
+              className="px-16 py-5 bg-primary text-white text-2xl font-black uppercase tracking-wider hover:bg-primary-light transition-all rounded-lg"
             >
               Start Round {currentRound + 1}
             </button>
           ) : (
-            <p className="text-gray-400 text-2xl uppercase tracking-wider">
-              Competition Finished! Check SCORE tab
-            </p>
+            <button
+              onClick={() => setShowGrandFinale(true)}
+              className="px-16 py-5 bg-accent-gold text-gray-900 text-2xl font-black uppercase tracking-wider hover:bg-accent-gold/80 transition-all rounded-lg shadow-2xl"
+            >
+              VIEW FINAL STANDINGS
+            </button>
           )}
         </div>
       </div>
@@ -1316,31 +1358,14 @@ const LiveAction = ({ state, updateTeamRound, setCurrentTeamIndex, setCurrentRou
                 </div>
               )}
 
-              {/* Mode Selection - Horizontal */}
-              <div className={`bg-gray-800/50 border-l-4 border-primary/30 p-4 ${availablePilots.length === 1 ? '' : 'col-span-2'}`}>
-                <label className="block text-xs font-bold text-gray-400 mb-3 uppercase tracking-wider">Select Mode</label>
-                <div className="grid grid-cols-3 gap-2">
-                  {Object.entries(roundModes).map(([key, config]) => (
-                    <button
-                      key={key}
-                      onClick={() => setMode(key)}
-                      className={`p-3 text-center transition-all ${
-                        mode === key
-                          ? 'bg-gray-700 border-l-4 border-primary'
-                          : 'bg-gray-700/50 border-l-4 border-transparent hover:border-gray-700'
-                      }`}
-                    >
-                      <div className={`font-black text-lg uppercase tracking-tight mb-1 ${config.color}`}>
-                        {config.label}
-                      </div>
-                      <div className="text-xs font-mono">
-                        <span className="text-accent-success">+{config.successPoints}</span>
-                        <span className="text-gray-300 mx-1">/</span>
-                        <span className="text-accent-danger">{config.failPoints}</span>
-                      </div>
-                    </button>
-                  ))}
-                </div>
+              {/* Mode Display - LOCKED (already declared) */}
+              <div className={`bg-gray-800/50 border-l-4 border-accent-success p-4 ${availablePilots.length === 1 ? '' : 'col-span-2'}`}>
+                <div className="text-xs font-bold text-gray-400 mb-2 uppercase tracking-wider">Mode (Declared)</div>
+                {mode && roundModes[mode] && (
+                  <div className="text-2xl font-bold text-gray-100">
+                    {roundModes[mode].label}
+                  </div>
+                )}
               </div>
             </div>
 
@@ -1356,7 +1381,7 @@ const LiveAction = ({ state, updateTeamRound, setCurrentTeamIndex, setCurrentRou
                     {currentRound === 2 && mode === 'SAFE' && `Your R1: ${formatTime(currentTeam.rounds[1].time)}`}
                     {currentRound === 2 && mode === 'RISKY' && `Your R1: ${formatTime(currentTeam.rounds[1].time)} — Beat by 10s`}
                     {currentRound === 2 && mode === 'ALL_IN' && `Fastest R1: ${formatTime(getFastestRound1())}`}
-                    {currentRound === 4 && mode === 'SAFE' && `Your R3: ${formatTime(currentTeam.rounds[3].time)} — Beat by 5s`}
+                    {currentRound === 4 && mode === 'SAFE' && `Your R3: ${formatTime(currentTeam.rounds[3].time)} — Beat by 20s`}
                     {currentRound === 4 && mode === 'CHALLENGE' && rival && (() => {
                       const rivalTeam = teams.find(t => t.id === parseInt(rival));
                       return `${rivalTeam?.name} R3: ${formatTime(rivalTeam?.rounds[3].time)}`;
@@ -1368,33 +1393,15 @@ const LiveAction = ({ state, updateTeamRound, setCurrentTeamIndex, setCurrentRou
                   </div>
                 </div>
 
-                {/* Rival Selection */}
-                {(mode === 'CHALLENGE' || mode === 'BLOOD_MATCH') && (
-                  <div className="bg-gray-800/50 border-l-4 border-primary/30 p-4">
-                    <label className="block text-xs font-bold text-gray-400 mb-3 uppercase tracking-wider">
-                      {mode === 'BLOOD_MATCH' ? 'Target Team' : 'Select Rival'}
-                    </label>
-                    <select
-                      value={rival}
-                      onChange={(e) => setRival(e.target.value)}
-                      className="w-full bg-gray-700 border-l-4 border-gray-700 px-4 py-3 text-gray-100 text-base font-bold focus:outline-none focus:border-primary disabled:opacity-50"
-                      disabled={mode === 'BLOOD_MATCH'}
-                    >
-                      <option value="">Select Rival</option>
-                      {teams
-                        .filter(t => t.id !== currentTeam.id && t.rounds[3].time !== null)
-                        .map((t) => (
-                          <option key={t.id} value={t.id}>
-                            {t.name} — {formatTime(t.rounds[3].time)}
-                          </option>
-                        ))}
-                    </select>
-                    {mode === 'BLOOD_MATCH' && (() => {
-                      const fastest = getFastestRound3Team();
-                      if (fastest) {
-                        setTimeout(() => setRival(fastest.id.toString()), 0);
-                      }
-                    })()}
+                {/* Rival Display - LOCKED (already declared) */}
+                {(mode === 'CHALLENGE' || mode === 'BLOOD_MATCH') && rival && (
+                  <div className="bg-gray-800/50 border-l-4 border-accent-success p-4">
+                    <div className="text-xs font-bold text-gray-400 mb-2 uppercase tracking-wider">
+                      {mode === 'BLOOD_MATCH' ? 'Target Team' : 'Rival'} (Declared)
+                    </div>
+                    <div className="text-2xl font-bold text-gray-100">
+                      {teams.find(t => t.id === parseInt(rival))?.name}
+                    </div>
                   </div>
                 )}
               </div>
@@ -1410,7 +1417,7 @@ const LiveAction = ({ state, updateTeamRound, setCurrentTeamIndex, setCurrentRou
                   onClick={() => setUseTimer(true)}
                   className={`px-6 py-2 text-sm font-bold uppercase tracking-wider transition-all ${
                     useTimer
-                      ? 'bg-primary text-dark-950'
+                      ? 'bg-primary text-white'
                       : 'bg-gray-700 text-gray-400 border border-gray-700'
                   }`}
                 >
@@ -1420,7 +1427,7 @@ const LiveAction = ({ state, updateTeamRound, setCurrentTeamIndex, setCurrentRou
                   onClick={() => setUseTimer(false)}
                   className={`px-6 py-2 text-sm font-bold uppercase tracking-wider transition-all ${
                     !useTimer
-                      ? 'bg-primary text-dark-950'
+                      ? 'bg-primary text-white'
                       : 'bg-gray-700 text-gray-400 border border-gray-700'
                   }`}
                 >
@@ -1441,7 +1448,7 @@ const LiveAction = ({ state, updateTeamRound, setCurrentTeamIndex, setCurrentRou
                     <button
                       onClick={startTimer}
                       disabled={timerRunning}
-                      className="flex-1 px-6 py-4 bg-accent-success text-dark-950 text-lg font-black uppercase tracking-wider hover:bg-green-400 transition-all disabled:opacity-30 disabled:cursor-not-allowed"
+                      className="flex-1 px-6 py-4 bg-accent-success text-white text-lg font-black uppercase tracking-wider hover:bg-green-400 transition-all disabled:opacity-30 disabled:cursor-not-allowed"
                     >
                       START
                     </button>
@@ -1572,7 +1579,7 @@ const LiveAction = ({ state, updateTeamRound, setCurrentTeamIndex, setCurrentRou
       <div className="border-t-2 border-primary/20 pt-4">
         <button
           onClick={handleSubmit}
-          className="w-full px-8 py-5 bg-primary text-dark-950 text-xl font-black uppercase tracking-widest hover:bg-cyan-400 transition-colors"
+          className="w-full px-8 py-5 bg-primary text-white text-xl font-black uppercase tracking-widest hover:bg-cyan-400 transition-colors"
         >
           {isDeclarationRound ? 'SUBMIT' : 'SUBMIT & NEXT TEAM'}
         </button>
