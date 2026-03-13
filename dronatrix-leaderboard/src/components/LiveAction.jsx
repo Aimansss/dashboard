@@ -1469,11 +1469,11 @@ const LiveAction = ({ state, updateTeamRound, setCurrentTeamIndex, setCurrentRou
                 <input
                   type="number"
                   min="0"
-                  max="9"
+                  max="99"
                   value={minutes}
-                  onChange={(e) => setMinutes(e.target.value.slice(0, 1))}
-                  placeholder="0"
-                  className="w-24 bg-gray-700 border-l-4 border-gray-700 px-4 py-4 text-5xl font-black font-mono text-primary text-center focus:outline-none focus:border-primary transition-all rounded-lg"
+                  onChange={(e) => setMinutes(e.target.value.slice(0, 2))}
+                  placeholder="00"
+                  className="w-32 bg-gray-700 border-l-4 border-gray-700 px-4 py-4 text-5xl font-black font-mono text-primary text-center focus:outline-none focus:border-primary transition-all rounded-lg"
                 />
                 <span className="text-4xl font-bold text-gray-400">:</span>
                 <input
@@ -1533,11 +1533,11 @@ const LiveAction = ({ state, updateTeamRound, setCurrentTeamIndex, setCurrentRou
                 <input
                   type="number"
                   min="0"
-                  max="9"
+                  max="99"
                   value={minutes}
-                  onChange={(e) => setMinutes(e.target.value.slice(0, 1))}
-                  placeholder="0"
-                  className="w-28 bg-gray-700 border-2 border-gray-700 px-4 py-6 text-6xl font-black font-mono text-primary text-center focus:outline-none focus:border-primary transition-all rounded-lg"
+                  onChange={(e) => setMinutes(e.target.value.slice(0, 2))}
+                  placeholder="00"
+                  className="w-36 bg-gray-700 border-2 border-gray-700 px-4 py-6 text-6xl font-black font-mono text-primary text-center focus:outline-none focus:border-primary transition-all rounded-lg"
                 />
                 <span className="text-5xl font-bold text-gray-400">:</span>
                 <input
