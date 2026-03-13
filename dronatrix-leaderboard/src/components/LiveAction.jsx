@@ -7,6 +7,7 @@ const LiveAction = ({ state, updateTeamRound, setCurrentTeamIndex, setCurrentRou
   const { currentRound, currentTeamIndex, teams } = state;
   const currentTeam = teams[currentTeamIndex];
 
+  const [showWelcome, setShowWelcome] = useState(true);
   const [showModeReveal, setShowModeReveal] = useState(true);
   const [showModeExplanation, setShowModeExplanation] = useState(false);
   const [showDeclarationPhase, setShowDeclarationPhase] = useState(false);
@@ -337,17 +338,65 @@ const LiveAction = ({ state, updateTeamRound, setCurrentTeamIndex, setCurrentRou
 
   const isRoundComplete = teams.every(t => t.rounds[currentRound].time !== null);
 
+  // WELCOME SCREEN - Backdrop for screen sharing
+  if (showWelcome && currentRound === 1 && currentTeamIndex === 0) {
+    return (
+      <div
+        className="h-full flex items-center justify-center bg-gray-800 cursor-pointer"
+        onClick={() => setShowWelcome(false)}
+      >
+        <motion.div
+          initial={{ opacity: 0 }}
+          animate={{ opacity: 1 }}
+          transition={{ duration: 1 }}
+          className="text-center"
+        >
+          {/* Main Logo/Title */}
+          <div className="mb-16">
+            <h1 className="text-9xl font-black text-primary uppercase tracking-tight mb-6">
+              DRONATRIX
+            </h1>
+            <div className="flex items-center justify-center gap-6 mb-8">
+              <div className="h-px w-32 bg-primary/50"></div>
+              <span className="text-6xl font-black text-primary">2026</span>
+              <div className="h-px w-32 bg-primary/50"></div>
+            </div>
+            <p className="text-3xl text-gray-400 uppercase tracking-[0.3em] font-bold">Drone Racing Championship</p>
+          </div>
+
+          {/* Competition Details */}
+          <div className="flex items-center justify-center gap-16 text-gray-300">
+            <div className="text-center">
+              <div className="text-7xl font-black text-primary mb-3">8</div>
+              <div className="text-base uppercase tracking-widest text-gray-400">Teams</div>
+            </div>
+            <div className="h-20 w-px bg-primary/30"></div>
+            <div className="text-center">
+              <div className="text-7xl font-black text-primary mb-3">4</div>
+              <div className="text-base uppercase tracking-widest text-gray-400">Rounds</div>
+            </div>
+            <div className="h-20 w-px bg-primary/30"></div>
+            <div className="text-center">
+              <div className="text-7xl font-black text-accent-gold mb-3">3</div>
+              <div className="text-base uppercase tracking-widest text-gray-400">Winners</div>
+            </div>
+          </div>
+        </motion.div>
+      </div>
+    );
+  }
+
   // GRAND FINALE SCREEN - Top 3 Winners
   if (showGrandFinale) {
     const rankedTeams = [...teams].sort((a, b) => b.totalPoints - a.totalPoints);
     const topThree = rankedTeams.slice(0, 3);
 
     return (
-      <div className="h-full flex items-center justify-center p-8 bg-dark-950 relative overflow-hidden">
+      <div className="h-full flex items-center justify-center p-8 bg-gradient-to-br from-gray-50 to-gray-100 relative overflow-hidden">
         {/* Epic Background */}
         <div className="absolute inset-0 pointer-events-none">
-          <div className="absolute top-0 left-0 w-full h-full bg-gradient-to-b from-accent-gold/10 via-transparent to-transparent"></div>
-          <div className="absolute w-[600px] h-[600px] bg-accent-gold/20 rounded-full blur-3xl top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 animate-pulse"></div>
+          <div className="absolute top-0 left-0 w-full h-full bg-gradient-to-b from-accent-gold/5 via-transparent to-transparent"></div>
+          <div className="absolute w-[600px] h-[600px] bg-accent-gold/10 rounded-full blur-3xl top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 animate-pulse"></div>
         </div>
 
         <motion.div
@@ -363,7 +412,7 @@ const LiveAction = ({ state, updateTeamRound, setCurrentTeamIndex, setCurrentRou
             transition={{ delay: 0.2 }}
             className="text-center mb-12"
           >
-            <h1 className="text-7xl font-black text-primary uppercase tracking-tight mb-4" style={{textShadow: '0 0 30px rgba(0,255,255,0.6)'}}>
+            <h1 className="text-7xl font-black text-primary uppercase tracking-tight mb-4">
               🏆 DRONATRIX 2026 🏆
             </h1>
             <p className="text-2xl text-gray-400 uppercase tracking-widest">Champions</p>
@@ -378,10 +427,10 @@ const LiveAction = ({ state, updateTeamRound, setCurrentTeamIndex, setCurrentRou
               transition={{ delay: 0.4, type: "spring" }}
               className="relative"
             >
-              <div className="bg-gradient-to-b from-accent-silver/20 to-dark-800 border-2 border-accent-silver p-8 text-center h-[280px] flex flex-col justify-center">
+              <div className="bg-gray-800 border-2 border-accent-silver p-8 text-center h-[280px] flex flex-col justify-center shadow-lg rounded-xl">
                 <div className="text-6xl mb-4">🥈</div>
                 <div className="text-7xl font-black text-accent-silver mb-2">2</div>
-                <div className="text-2xl font-black text-gray-100 uppercase mb-4">{topThree[1]?.name}</div>
+                <div className="text-2xl font-black text-gray-800 uppercase mb-4">{topThree[1]?.name}</div>
                 <div className="text-4xl font-black font-mono text-accent-silver">
                   {topThree[1]?.totalPoints > 0 ? '+' : ''}{topThree[1]?.totalPoints}
                 </div>
@@ -395,11 +444,11 @@ const LiveAction = ({ state, updateTeamRound, setCurrentTeamIndex, setCurrentRou
               transition={{ delay: 0.6, type: "spring" }}
               className="relative"
             >
-              <div className="bg-gradient-to-b from-accent-gold/20 to-dark-800 border-4 border-accent-gold p-8 text-center h-[380px] flex flex-col justify-center shadow-2xl shadow-accent-gold/50">
+              <div className="bg-gray-800 border-4 border-accent-gold p-8 text-center h-[380px] flex flex-col justify-center shadow-2xl shadow-accent-gold/30">
                 <div className="absolute -top-16 left-1/2 -translate-x-1/2 text-8xl animate-bounce">👑</div>
                 <div className="text-8xl mb-4">🥇</div>
-                <div className="text-9xl font-black text-accent-gold mb-2" style={{textShadow: '0 0 40px rgba(255,215,0,0.8)'}}>1</div>
-                <div className="text-3xl font-black text-gray-100 uppercase mb-4">{topThree[0]?.name}</div>
+                <div className="text-9xl font-black text-accent-gold mb-2">1</div>
+                <div className="text-3xl font-black text-gray-800 uppercase mb-4">{topThree[0]?.name}</div>
                 <div className="text-5xl font-black font-mono text-accent-gold">
                   {topThree[0]?.totalPoints > 0 ? '+' : ''}{topThree[0]?.totalPoints}
                 </div>
@@ -413,10 +462,10 @@ const LiveAction = ({ state, updateTeamRound, setCurrentTeamIndex, setCurrentRou
               transition={{ delay: 0.5, type: "spring" }}
               className="relative"
             >
-              <div className="bg-gradient-to-b from-accent-bronze/20 to-dark-800 border-2 border-accent-bronze p-8 text-center h-[240px] flex flex-col justify-center">
+              <div className="bg-gray-800 border-2 border-accent-bronze p-8 text-center h-[240px] flex flex-col justify-center shadow-lg rounded-xl">
                 <div className="text-6xl mb-4">🥉</div>
                 <div className="text-7xl font-black text-accent-bronze mb-2">3</div>
-                <div className="text-2xl font-black text-gray-100 uppercase mb-4">{topThree[2]?.name}</div>
+                <div className="text-2xl font-black text-gray-800 uppercase mb-4">{topThree[2]?.name}</div>
                 <div className="text-4xl font-black font-mono text-accent-bronze">
                   {topThree[2]?.totalPoints > 0 ? '+' : ''}{topThree[2]?.totalPoints}
                 </div>
@@ -441,7 +490,7 @@ const LiveAction = ({ state, updateTeamRound, setCurrentTeamIndex, setCurrentRou
   // MODE EXPLANATION SCREEN - Show risks and rewards before declaration
   if (showModeExplanation && isDeclarationRound) {
     return (
-      <div className="h-full flex items-center justify-center p-8 bg-dark-950 relative overflow-hidden">
+      <div className="h-full flex items-center justify-center p-8 bg-gray-900 relative overflow-hidden">
         {/* Background */}
         <div className="absolute inset-0 pointer-events-none opacity-10">
           <div className="absolute w-[500px] h-[500px] bg-primary/30 rounded-full blur-3xl top-1/4 left-1/4 animate-pulse"></div>
@@ -464,7 +513,7 @@ const LiveAction = ({ state, updateTeamRound, setCurrentTeamIndex, setCurrentRou
               ROUND {currentRound}
             </h1>
             <p className="text-3xl text-gray-300 uppercase tracking-wider font-bold">Know Your Risk</p>
-            <p className="text-lg text-gray-500 uppercase tracking-widest mt-2">Choose Wisely</p>
+            <p className="text-lg text-gray-400 uppercase tracking-widest mt-2">Choose Wisely</p>
           </motion.div>
 
           {/* Mode Cards */}
@@ -475,7 +524,7 @@ const LiveAction = ({ state, updateTeamRound, setCurrentTeamIndex, setCurrentRou
                 initial={{ y: 50, opacity: 0 }}
                 animate={{ y: 0, opacity: 1 }}
                 transition={{ delay: 0.3 + index * 0.1, type: "spring" }}
-                className={`bg-dark-800 border-2 p-8 relative overflow-hidden ${
+                className={`bg-gray-700 border-2 p-8 relative overflow-hidden ${
                   key === 'SAFE' ? 'border-accent-success' :
                   key === 'RISKY' || key === 'CHALLENGE' ? 'border-accent-warning' :
                   'border-accent-danger'
@@ -494,13 +543,13 @@ const LiveAction = ({ state, updateTeamRound, setCurrentTeamIndex, setCurrentRou
                   </h2>
 
                   {/* Points Display */}
-                  <div className="mb-6 pb-6 border-b-2 border-dark-700">
+                  <div className="mb-6 pb-6 border-b-2 border-gray-700">
                     <div className="flex items-center justify-between mb-3">
-                      <span className="text-sm text-gray-500 uppercase tracking-wider">Success</span>
+                      <span className="text-sm text-gray-400 uppercase tracking-wider">Success</span>
                       <span className="text-4xl font-black text-accent-success">+{config.successPoints}</span>
                     </div>
                     <div className="flex items-center justify-between">
-                      <span className="text-sm text-gray-500 uppercase tracking-wider">Failure</span>
+                      <span className="text-sm text-gray-400 uppercase tracking-wider">Failure</span>
                       <span className="text-4xl font-black text-accent-danger">{config.failPoints}</span>
                     </div>
                   </div>
@@ -610,8 +659,8 @@ const LiveAction = ({ state, updateTeamRound, setCurrentTeamIndex, setCurrentRou
                   initial={{ opacity: 0, x: -20 }}
                   animate={{ opacity: 1, x: 0 }}
                   transition={{ delay: idx * 0.05 }}
-                  className={`bg-dark-800 border-2 p-2.5 flex flex-col ${
-                    hasDeclared ? 'border-accent-success' : 'border-dark-600'
+                  className={`bg-gray-700 border-2 p-2.5 flex flex-col ${
+                    hasDeclared ? 'border-accent-success' : 'border-gray-700'
                   }`}
                 >
                   <div className="flex items-center justify-between mb-1.5">
@@ -638,14 +687,14 @@ const LiveAction = ({ state, updateTeamRound, setCurrentTeamIndex, setCurrentRou
                             }}
                             className={`p-3 text-center border-2 transition-all ${
                               teamDeclaration.mode === key
-                                ? 'bg-dark-700 border-primary'
-                                : 'bg-dark-900 border-dark-700 hover:border-primary/50'
+                                ? 'bg-gray-700 border-primary'
+                                : 'bg-gray-800 border-gray-700 hover:border-primary/50'
                             }`}
                           >
                             <div className={`font-black text-base uppercase mb-0.5 ${config.color}`}>
                               {config.label}
                             </div>
-                            <div className="text-xs text-gray-500 font-mono">
+                            <div className="text-xs text-gray-400 font-mono">
                               {config.successPoints > 0 ? `+${config.successPoints}` : config.successPoints} / {config.failPoints}
                             </div>
                           </button>
@@ -654,7 +703,7 @@ const LiveAction = ({ state, updateTeamRound, setCurrentTeamIndex, setCurrentRou
 
                       {teamDeclaration.mode && teamDeclaration.mode !== 'SAFE' && currentRound === 4 && (
                         <div className="flex-1 flex flex-col">
-                          <label className="block text-[10px] font-bold text-gray-500 uppercase mb-1">
+                          <label className="block text-[10px] font-bold text-gray-400 uppercase mb-1">
                             {teamDeclaration.mode === 'CHALLENGE' ? 'Rival' : 'Auto'}
                           </label>
                           {teamDeclaration.mode === 'CHALLENGE' ? (
@@ -664,7 +713,7 @@ const LiveAction = ({ state, updateTeamRound, setCurrentTeamIndex, setCurrentRou
                                 mode: teamDeclaration.mode,
                                 rival: e.target.value
                               })}
-                              className="w-full bg-dark-900 border border-dark-700 px-2 py-1 text-sm text-gray-100 focus:border-primary"
+                              className="w-full bg-gray-800 border border-gray-700 px-2 py-1 text-sm text-gray-100 focus:border-primary"
                             >
                               <option value="">-- Select --</option>
                               {teams.filter(t => t.id !== team.id && t.rounds[3].time).map(t => (
@@ -672,7 +721,7 @@ const LiveAction = ({ state, updateTeamRound, setCurrentTeamIndex, setCurrentRou
                               ))}
                             </select>
                           ) : (
-                            <div className="bg-dark-900 border border-primary/30 px-2 py-1 text-primary text-center text-sm font-bold">
+                            <div className="bg-gray-800 border border-primary/30 px-2 py-1 text-primary text-center text-sm font-bold">
                               {getFastestRound3Team()?.name || 'TBD'}
                             </div>
                           )}
@@ -741,7 +790,7 @@ const LiveAction = ({ state, updateTeamRound, setCurrentTeamIndex, setCurrentRou
           >
             <button
               onClick={handleFinishDeclarations}
-              className="px-16 py-3 bg-primary text-dark-950 text-xl font-black uppercase tracking-wider hover:bg-cyan-400 transition-all"
+              className="px-16 py-3 bg-primary text-dark-950 text-xl font-black uppercase tracking-wider hover:bg-cyan-400 transition-all rounded-lg"
             >
               START ROUND {currentRound} →
             </button>
@@ -754,7 +803,7 @@ const LiveAction = ({ state, updateTeamRound, setCurrentTeamIndex, setCurrentRou
   // SUCCESS/FAIL SCREEN (first screen after submit in declaration rounds)
   if (showSuccessFail && resultData) {
     return (
-      <div className="h-full flex items-center justify-center p-8 bg-dark-950">
+      <div className="h-full flex items-center justify-center p-8 bg-gray-900">
         <motion.div
           initial={{ opacity: 0 }}
           animate={{ opacity: 1 }}
@@ -769,7 +818,7 @@ const LiveAction = ({ state, updateTeamRound, setCurrentTeamIndex, setCurrentRou
               animate={{ x: 0, opacity: 1 }}
               transition={{ duration: 0.4, delay: 0.1 }}
               className={`flex flex-col justify-center items-center relative overflow-hidden ${
-                resultData.success ? 'bg-dark-900' : 'bg-dark-900'
+                resultData.success ? 'bg-gray-800' : 'bg-gray-800'
               }`}
             >
               <div className={`absolute inset-0 opacity-5 ${
@@ -795,29 +844,29 @@ const LiveAction = ({ state, updateTeamRound, setCurrentTeamIndex, setCurrentRou
               initial={{ x: 100, opacity: 0 }}
               animate={{ x: 0, opacity: 1 }}
               transition={{ duration: 0.4, delay: 0.1 }}
-              className="bg-dark-800 flex flex-col justify-center p-12"
+              className="bg-gray-700 flex flex-col justify-center p-12"
             >
               <div className="space-y-8">
                 <div>
-                  <div className="text-xs font-bold text-gray-600 uppercase tracking-widest mb-2">Team</div>
+                  <div className="text-xs font-bold text-gray-400 uppercase tracking-widest mb-2">Team</div>
                   <div className="text-4xl font-black text-gray-100 uppercase tracking-tight">{resultData.teamName}</div>
                 </div>
 
                 <div className="grid grid-cols-2 gap-6">
                   <div>
-                    <div className="text-xs font-bold text-gray-600 uppercase tracking-widest mb-2">Mode</div>
+                    <div className="text-xs font-bold text-gray-400 uppercase tracking-widest mb-2">Mode</div>
                     <div className="text-xl font-bold text-primary uppercase">{resultData.mode}</div>
                   </div>
                   <div>
-                    <div className="text-xs font-bold text-gray-600 uppercase tracking-widest mb-2">Time</div>
+                    <div className="text-xs font-bold text-gray-400 uppercase tracking-widest mb-2">Time</div>
                     <div className="text-xl font-bold text-gray-100 font-mono">{formatTime(resultData.actualTime)}</div>
                   </div>
                 </div>
 
                 <div>
-                  <div className="text-xs font-bold text-gray-600 uppercase tracking-widest mb-2">Target</div>
+                  <div className="text-xs font-bold text-gray-400 uppercase tracking-widest mb-2">Target</div>
                   <div className="text-lg text-gray-400">{resultData.targetDescription}</div>
-                  <div className="text-sm text-gray-600 font-mono mt-1">{formatTime(resultData.targetTime)}</div>
+                  <div className="text-sm text-gray-400 font-mono mt-1">{formatTime(resultData.targetTime)}</div>
                 </div>
               </div>
             </motion.div>
@@ -852,23 +901,23 @@ const LiveAction = ({ state, updateTeamRound, setCurrentTeamIndex, setCurrentRou
         <motion.div
           initial={{ opacity: 0, y: 20 }}
           animate={{ opacity: 1, y: 0 }}
-          className="bg-dark-800 border border-dark-600 flex-1 flex flex-col overflow-hidden"
+          className="bg-gray-800 border border-gray-700 flex-1 flex flex-col overflow-hidden shadow-lg rounded-xl"
         >
-          <div className="bg-dark-700 border-b border-dark-600 px-6 py-3">
+          <div className="bg-gray-700 border-b border-gray-700 px-6 py-3">
             <h2 className="text-base font-bold text-gray-400 uppercase tracking-wider">Current Standings</h2>
           </div>
           <div className="flex-1">
             <table className="w-full">
-              <thead className="bg-dark-700">
-                <tr className="border-b border-dark-600">
-                  <th className="text-center py-2.5 px-5 text-gray-600 font-semibold text-sm uppercase tracking-wider">#</th>
-                  <th className="text-left py-2.5 px-5 text-gray-600 font-semibold text-sm uppercase tracking-wider">Team</th>
-                  <th className="text-center py-2.5 px-3 text-gray-600 font-semibold text-sm uppercase tracking-wider">R1</th>
-                  <th className="text-center py-2.5 px-3 text-gray-600 font-semibold text-sm uppercase tracking-wider">R2</th>
-                  <th className="text-center py-2.5 px-3 text-gray-600 font-semibold text-sm uppercase tracking-wider">R3</th>
-                  <th className="text-center py-2.5 px-3 text-gray-600 font-semibold text-sm uppercase tracking-wider">R4</th>
-                  <th className="text-center py-2.5 px-3 text-gray-600 font-semibold text-sm uppercase tracking-wider">Penalty</th>
-                  <th className="text-right py-2.5 px-5 text-gray-600 font-semibold text-sm uppercase tracking-wider">Total</th>
+              <thead className="bg-gray-700">
+                <tr className="border-b border-gray-700">
+                  <th className="text-center py-2.5 px-5 text-primary font-semibold text-sm uppercase tracking-wider">#</th>
+                  <th className="text-left py-2.5 px-5 text-primary font-semibold text-sm uppercase tracking-wider">Team</th>
+                  <th className="text-center py-2.5 px-3 text-primary font-semibold text-sm uppercase tracking-wider">R1</th>
+                  <th className="text-center py-2.5 px-3 text-primary font-semibold text-sm uppercase tracking-wider">R2</th>
+                  <th className="text-center py-2.5 px-3 text-primary font-semibold text-sm uppercase tracking-wider">R3</th>
+                  <th className="text-center py-2.5 px-3 text-primary font-semibold text-sm uppercase tracking-wider">R4</th>
+                  <th className="text-center py-2.5 px-3 text-primary font-semibold text-sm uppercase tracking-wider">Penalty</th>
+                  <th className="text-right py-2.5 px-5 text-primary font-semibold text-sm uppercase tracking-wider">Total</th>
                 </tr>
               </thead>
               <AnimatePresence mode="popLayout">
@@ -884,7 +933,7 @@ const LiveAction = ({ state, updateTeamRound, setCurrentTeamIndex, setCurrentRou
                         layout: { type: "spring", bounce: 0.2, duration: 0.6 },
                         opacity: { duration: 0.2 }
                       }}
-                      className={`border-b border-dark-700 hover:bg-dark-700/30 transition-colors ${
+                      className={`border-b border-gray-700 hover:bg-gray-700/30 transition-colors ${
                         index === 0 ? 'bg-accent-gold/5' :
                         index === 1 ? 'bg-accent-silver/5' :
                         index === 2 ? 'bg-accent-bronze/5' : ''
@@ -899,7 +948,7 @@ const LiveAction = ({ state, updateTeamRound, setCurrentTeamIndex, setCurrentRou
                             index === 0 ? 'text-accent-gold' :
                             index === 1 ? 'text-accent-silver' :
                             index === 2 ? 'text-accent-bronze' :
-                            'text-gray-500'
+                            'text-gray-400'
                           }`}
                         >
                           {index + 1}
@@ -912,7 +961,7 @@ const LiveAction = ({ state, updateTeamRound, setCurrentTeamIndex, setCurrentRou
                           initial={{ scale: 1.3 }}
                           animate={{ scale: 1 }}
                           className={`inline-block font-mono font-bold text-base ${
-                            team.rounds[1].bonusPoints > 0 ? 'text-accent-success' : 'text-gray-600'
+                            team.rounds[1].bonusPoints > 0 ? 'text-accent-success' : 'text-gray-400'
                           }`}
                         >
                           {team.rounds[1].bonusPoints ? `+${team.rounds[1].bonusPoints}` : '--'}
@@ -925,7 +974,7 @@ const LiveAction = ({ state, updateTeamRound, setCurrentTeamIndex, setCurrentRou
                           animate={{ scale: 1 }}
                           className={`inline-block font-mono font-bold text-base ${
                             team.rounds[2].points > 0 ? 'text-accent-success' :
-                            team.rounds[2].points < 0 ? 'text-accent-danger' : 'text-gray-600'
+                            team.rounds[2].points < 0 ? 'text-accent-danger' : 'text-gray-400'
                           }`}
                         >
                           {team.rounds[2].points !== 0 ? (team.rounds[2].points > 0 ? `+${team.rounds[2].points}` : team.rounds[2].points) : '--'}
@@ -937,7 +986,7 @@ const LiveAction = ({ state, updateTeamRound, setCurrentTeamIndex, setCurrentRou
                           initial={{ scale: 1.3 }}
                           animate={{ scale: 1 }}
                           className={`inline-block font-mono font-bold text-base ${
-                            team.rounds[3].bonusPoints > 0 ? 'text-accent-success' : 'text-gray-600'
+                            team.rounds[3].bonusPoints > 0 ? 'text-accent-success' : 'text-gray-400'
                           }`}
                         >
                           {team.rounds[3].bonusPoints ? `+${team.rounds[3].bonusPoints}` : '--'}
@@ -950,7 +999,7 @@ const LiveAction = ({ state, updateTeamRound, setCurrentTeamIndex, setCurrentRou
                           animate={{ scale: 1 }}
                           className={`inline-block font-mono font-bold text-base ${
                             team.rounds[4].ownPoints > 0 ? 'text-accent-success' :
-                            team.rounds[4].ownPoints < 0 ? 'text-accent-danger' : 'text-gray-600'
+                            team.rounds[4].ownPoints < 0 ? 'text-accent-danger' : 'text-gray-400'
                           }`}
                         >
                           {team.rounds[4].ownPoints !== 0 ? (team.rounds[4].ownPoints > 0 ? `+${team.rounds[4].ownPoints}` : team.rounds[4].ownPoints) : '--'}
@@ -962,7 +1011,7 @@ const LiveAction = ({ state, updateTeamRound, setCurrentTeamIndex, setCurrentRou
                           initial={{ scale: 1.3 }}
                           animate={{ scale: 1 }}
                           className={`inline-block font-mono font-bold text-base ${
-                            team.rounds[4].penaltyPoints < 0 ? 'text-accent-danger' : 'text-gray-600'
+                            team.rounds[4].penaltyPoints < 0 ? 'text-accent-danger' : 'text-gray-400'
                           }`}
                         >
                           {team.rounds[4].penaltyPoints !== 0 ? team.rounds[4].penaltyPoints : '--'}
@@ -975,7 +1024,7 @@ const LiveAction = ({ state, updateTeamRound, setCurrentTeamIndex, setCurrentRou
                           animate={{ scale: 1 }}
                           className={`inline-block font-mono font-bold text-xl ${
                             team.totalPoints > 0 ? 'text-accent-success' :
-                            team.totalPoints < 0 ? 'text-accent-danger' : 'text-gray-500'
+                            team.totalPoints < 0 ? 'text-accent-danger' : 'text-gray-400'
                           }`}
                         >
                           {team.totalPoints > 0 ? '+' : ''}{team.totalPoints}
@@ -993,7 +1042,7 @@ const LiveAction = ({ state, updateTeamRound, setCurrentTeamIndex, setCurrentRou
         <div className="text-center">
           <button
             onClick={handleNextTeam}
-            className="px-16 py-4 bg-primary text-dark-950 text-xl font-bold uppercase tracking-wider hover:bg-primary-light transition-all"
+            className="px-16 py-4 bg-primary text-dark-950 text-xl font-bold uppercase tracking-wider hover:bg-primary-light transition-all rounded-lg"
           >
             {currentTeamIndex < teams.length - 1 ? 'NEXT TEAM' : 'FINISH ROUND'}
           </button>
@@ -1025,7 +1074,7 @@ const LiveAction = ({ state, updateTeamRound, setCurrentTeamIndex, setCurrentRou
             initial={{ opacity: 0, y: 20 }}
             animate={{ opacity: 1, y: 0 }}
             transition={{ delay: 0.2 }}
-            className="bg-dark-900/50 backdrop-blur-xl border-2 border-primary/30 p-10 mb-8"
+            className="bg-gray-800/50 backdrop-blur-xl border-2 border-primary/30 p-10 mb-8"
           >
             <h2 className="text-4xl font-black text-center text-primary uppercase tracking-widest mb-10">
               THE STAKES
@@ -1051,7 +1100,7 @@ const LiveAction = ({ state, updateTeamRound, setCurrentTeamIndex, setCurrentRou
                     initial={{ y: 20, opacity: 0 }}
                     animate={{ y: 0, opacity: 1 }}
                     transition={{ delay: 0.3 + 0.1 * index }}
-                    className="bg-dark-800 border-2 border-dark-700 p-8 text-center"
+                    className="bg-gray-700 border-2 border-gray-700 p-8 text-center"
                   >
                     <div className={`text-4xl font-black mb-4 ${config.color}`}>
                       {config.label.toUpperCase()}
@@ -1063,15 +1112,15 @@ const LiveAction = ({ state, updateTeamRound, setCurrentTeamIndex, setCurrentRou
                       <div className="text-accent-success font-black text-2xl">
                         +{config.successPoints}
                       </div>
-                      <div className="text-xs text-gray-600 uppercase tracking-wider">SUCCESS</div>
-                      <div className="border-t border-dark-600 my-3"></div>
+                      <div className="text-xs text-gray-400 uppercase tracking-wider">SUCCESS</div>
+                      <div className="border-t border-gray-700 my-3"></div>
                       <div className="text-accent-danger font-black text-2xl">
                         {config.failPoints}
                       </div>
-                      <div className="text-xs text-gray-600 uppercase tracking-wider">FAILURE</div>
+                      <div className="text-xs text-gray-400 uppercase tracking-wider">FAILURE</div>
                       {config.rivalPenalty && (
                         <>
-                          <div className="border-t border-dark-600 my-3"></div>
+                          <div className="border-t border-gray-700 my-3"></div>
                           <div className="text-accent-warning font-bold text-sm">
                             Rival Penalty: {config.rivalPenalty} pts
                           </div>
@@ -1086,7 +1135,7 @@ const LiveAction = ({ state, updateTeamRound, setCurrentTeamIndex, setCurrentRou
             <div className="text-center mt-8">
               <button
                 onClick={() => setShowModeReveal(false)}
-                className="px-16 py-5 bg-primary text-dark-950 text-2xl font-black uppercase tracking-wider hover:bg-primary-light transition-all"
+                className="px-16 py-5 bg-primary text-dark-950 text-2xl font-black uppercase tracking-wider hover:bg-primary-light transition-all rounded-lg"
               >
                 START ROUND {currentRound}
               </button>
@@ -1120,27 +1169,27 @@ const LiveAction = ({ state, updateTeamRound, setCurrentTeamIndex, setCurrentRou
             initial={{ opacity: 0, y: 20 }}
             animate={{ opacity: 1, y: 0 }}
             transition={{ delay: 0.2 }}
-            className="bg-dark-800 border border-dark-600 flex-1 flex flex-col overflow-hidden mb-6"
+            className="bg-gray-800 border border-gray-700 flex-1 flex flex-col overflow-hidden mb-6 shadow-lg rounded-xl"
           >
-            <div className="bg-dark-700 border-b border-dark-600 px-6 py-4">
+            <div className="bg-gray-700 border-b border-gray-700 px-6 py-4">
               <h2 className="text-base font-bold text-gray-400 uppercase tracking-wider">Current Standings</h2>
             </div>
             <div className="overflow-auto flex-1">
               <table className="w-full">
-                <thead className="sticky top-0 bg-dark-700">
-                  <tr className="border-b border-dark-600">
-                    <th className="text-center py-3 px-6 text-gray-600 font-semibold text-sm uppercase tracking-wider">#</th>
-                    <th className="text-left py-3 px-6 text-gray-600 font-semibold text-sm uppercase tracking-wider">Team</th>
-                    <th className="text-center py-3 px-5 text-gray-600 font-semibold text-sm uppercase tracking-wider">R1</th>
-                    <th className="text-center py-3 px-5 text-gray-600 font-semibold text-sm uppercase tracking-wider">R2</th>
-                    {currentRound === 4 && <th className="text-center py-3 px-5 text-gray-600 font-semibold text-sm uppercase tracking-wider">R3</th>}
-                    {currentRound === 4 && <th className="text-center py-3 px-5 text-gray-600 font-semibold text-sm uppercase tracking-wider">R4</th>}
-                    <th className="text-right py-3 px-6 text-gray-600 font-semibold text-sm uppercase tracking-wider">Total</th>
+                <thead className="sticky top-0 bg-gray-700">
+                  <tr className="border-b border-gray-700">
+                    <th className="text-center py-3 px-6 text-primary font-semibold text-sm uppercase tracking-wider">#</th>
+                    <th className="text-left py-3 px-6 text-primary font-semibold text-sm uppercase tracking-wider">Team</th>
+                    <th className="text-center py-3 px-5 text-primary font-semibold text-sm uppercase tracking-wider">R1</th>
+                    <th className="text-center py-3 px-5 text-primary font-semibold text-sm uppercase tracking-wider">R2</th>
+                    {currentRound === 4 && <th className="text-center py-3 px-5 text-primary font-semibold text-sm uppercase tracking-wider">R3</th>}
+                    {currentRound === 4 && <th className="text-center py-3 px-5 text-primary font-semibold text-sm uppercase tracking-wider">R4</th>}
+                    <th className="text-right py-3 px-6 text-primary font-semibold text-sm uppercase tracking-wider">Total</th>
                   </tr>
                 </thead>
                 <tbody>
                   {rankedTeams.map((team, index) => (
-                    <tr key={team.id} className={`border-b border-dark-700 ${
+                    <tr key={team.id} className={`border-b border-gray-700 ${
                       index === 0 ? 'bg-accent-gold/5' :
                       index === 1 ? 'bg-accent-silver/5' :
                       index === 2 ? 'bg-accent-bronze/5' : ''
@@ -1150,7 +1199,7 @@ const LiveAction = ({ state, updateTeamRound, setCurrentTeamIndex, setCurrentRou
                           index === 0 ? 'text-accent-gold' :
                           index === 1 ? 'text-accent-silver' :
                           index === 2 ? 'text-accent-bronze' :
-                          'text-gray-500'
+                          'text-gray-400'
                         }`}>
                           {index + 1}
                         </span>
@@ -1158,7 +1207,7 @@ const LiveAction = ({ state, updateTeamRound, setCurrentTeamIndex, setCurrentRou
                       <td className="py-5 px-6 font-bold text-gray-100 uppercase text-base tracking-wide">{team.name}</td>
                       <td className="py-5 px-5 text-center">
                         <span className={`font-mono font-bold text-base ${
-                          team.rounds[1].bonusPoints > 0 ? 'text-accent-success' : 'text-gray-600'
+                          team.rounds[1].bonusPoints > 0 ? 'text-accent-success' : 'text-gray-400'
                         }`}>
                           {team.rounds[1].bonusPoints ? `+${team.rounds[1].bonusPoints}` : '--'}
                         </span>
@@ -1166,7 +1215,7 @@ const LiveAction = ({ state, updateTeamRound, setCurrentTeamIndex, setCurrentRou
                       <td className="py-5 px-5 text-center">
                         <span className={`font-mono font-bold text-base ${
                           team.rounds[2].points > 0 ? 'text-accent-success' :
-                          team.rounds[2].points < 0 ? 'text-accent-danger' : 'text-gray-600'
+                          team.rounds[2].points < 0 ? 'text-accent-danger' : 'text-gray-400'
                         }`}>
                           {team.rounds[2].points !== 0 ? (team.rounds[2].points > 0 ? `+${team.rounds[2].points}` : team.rounds[2].points) : '--'}
                         </span>
@@ -1175,7 +1224,7 @@ const LiveAction = ({ state, updateTeamRound, setCurrentTeamIndex, setCurrentRou
                         <>
                           <td className="py-5 px-5 text-center">
                             <span className={`font-mono font-bold text-base ${
-                              team.rounds[3].bonusPoints > 0 ? 'text-accent-success' : 'text-gray-600'
+                              team.rounds[3].bonusPoints > 0 ? 'text-accent-success' : 'text-gray-400'
                             }`}>
                               {team.rounds[3].bonusPoints ? `+${team.rounds[3].bonusPoints}` : '--'}
                             </span>
@@ -1183,7 +1232,7 @@ const LiveAction = ({ state, updateTeamRound, setCurrentTeamIndex, setCurrentRou
                           <td className="py-5 px-5 text-center">
                             <span className={`font-mono font-bold text-base ${
                               team.rounds[4].points > 0 ? 'text-accent-success' :
-                              team.rounds[4].points < 0 ? 'text-accent-danger' : 'text-gray-600'
+                              team.rounds[4].points < 0 ? 'text-accent-danger' : 'text-gray-400'
                             }`}>
                               {team.rounds[4].points !== 0 ? (team.rounds[4].points > 0 ? `+${team.rounds[4].points}` : team.rounds[4].points) : '--'}
                             </span>
@@ -1193,7 +1242,7 @@ const LiveAction = ({ state, updateTeamRound, setCurrentTeamIndex, setCurrentRou
                       <td className="py-5 px-6 text-right">
                         <span className={`font-mono font-bold text-xl ${
                           team.totalPoints > 0 ? 'text-accent-success' :
-                          team.totalPoints < 0 ? 'text-accent-danger' : 'text-gray-500'
+                          team.totalPoints < 0 ? 'text-accent-danger' : 'text-gray-400'
                         }`}>
                           {team.totalPoints > 0 ? '+' : ''}{team.totalPoints}
                         </span>
@@ -1216,7 +1265,7 @@ const LiveAction = ({ state, updateTeamRound, setCurrentTeamIndex, setCurrentRou
                   setShowModeReveal(true);
                 }
               }}
-              className="px-16 py-5 bg-primary text-dark-950 text-2xl font-black uppercase tracking-wider hover:bg-primary-light transition-all"
+              className="px-16 py-5 bg-primary text-dark-950 text-2xl font-black uppercase tracking-wider hover:bg-primary-light transition-all rounded-lg"
             >
               Start Round {currentRound + 1}
             </button>
@@ -1232,7 +1281,7 @@ const LiveAction = ({ state, updateTeamRound, setCurrentTeamIndex, setCurrentRou
 
   // MAIN INTERFACE
   return (
-    <div className="h-full flex flex-col p-4 bg-dark-950">
+    <div className="h-full flex flex-col p-4 bg-gray-900">
       {/* Team Header - BIG */}
       <motion.div
         initial={{ opacity: 0 }}
@@ -1247,7 +1296,7 @@ const LiveAction = ({ state, updateTeamRound, setCurrentTeamIndex, setCurrentRou
           <h1 className="text-5xl font-black text-gray-100 uppercase tracking-tight">
             {currentTeam.name}
           </h1>
-          <div className="text-sm text-gray-500 font-mono">
+          <div className="text-sm text-gray-400 font-mono">
             {currentTeam.members.join(' • ')}
           </div>
         </div>
@@ -1261,15 +1310,15 @@ const LiveAction = ({ state, updateTeamRound, setCurrentTeamIndex, setCurrentRou
             <div className="grid grid-cols-2 gap-3">
               {/* Pilot */}
               {availablePilots.length === 1 && (
-                <div className="bg-dark-900/50 border-l-4 border-accent-success p-4">
-                  <div className="text-xs font-bold text-gray-600 uppercase tracking-wider mb-2">Pilot</div>
+                <div className="bg-gray-800/50 border-l-4 border-accent-success p-4">
+                  <div className="text-xs font-bold text-gray-400 uppercase tracking-wider mb-2">Pilot</div>
                   <div className="text-2xl font-bold text-gray-100">{pilot}</div>
                 </div>
               )}
 
               {/* Mode Selection - Horizontal */}
-              <div className={`bg-dark-900/50 border-l-4 border-primary/30 p-4 ${availablePilots.length === 1 ? '' : 'col-span-2'}`}>
-                <label className="block text-xs font-bold text-gray-600 mb-3 uppercase tracking-wider">Select Mode</label>
+              <div className={`bg-gray-800/50 border-l-4 border-primary/30 p-4 ${availablePilots.length === 1 ? '' : 'col-span-2'}`}>
+                <label className="block text-xs font-bold text-gray-400 mb-3 uppercase tracking-wider">Select Mode</label>
                 <div className="grid grid-cols-3 gap-2">
                   {Object.entries(roundModes).map(([key, config]) => (
                     <button
@@ -1277,8 +1326,8 @@ const LiveAction = ({ state, updateTeamRound, setCurrentTeamIndex, setCurrentRou
                       onClick={() => setMode(key)}
                       className={`p-3 text-center transition-all ${
                         mode === key
-                          ? 'bg-dark-800 border-l-4 border-primary'
-                          : 'bg-dark-800/50 border-l-4 border-transparent hover:border-dark-600'
+                          ? 'bg-gray-700 border-l-4 border-primary'
+                          : 'bg-gray-700/50 border-l-4 border-transparent hover:border-gray-700'
                       }`}
                     >
                       <div className={`font-black text-lg uppercase tracking-tight mb-1 ${config.color}`}>
@@ -1286,7 +1335,7 @@ const LiveAction = ({ state, updateTeamRound, setCurrentTeamIndex, setCurrentRou
                       </div>
                       <div className="text-xs font-mono">
                         <span className="text-accent-success">+{config.successPoints}</span>
-                        <span className="text-gray-700 mx-1">/</span>
+                        <span className="text-gray-300 mx-1">/</span>
                         <span className="text-accent-danger">{config.failPoints}</span>
                       </div>
                     </button>
@@ -1298,12 +1347,12 @@ const LiveAction = ({ state, updateTeamRound, setCurrentTeamIndex, setCurrentRou
             {/* Row 2: Challenge + Rival (if mode selected) */}
             {mode && (
               <div className={`grid ${(mode === 'CHALLENGE' || mode === 'BLOOD_MATCH') ? 'grid-cols-2' : 'grid-cols-1'} gap-3`}>
-                <div className="bg-dark-900/50 border-l-4 border-accent-success p-4">
-                  <div className="text-xs font-bold text-gray-600 uppercase tracking-wider mb-3">Your Challenge</div>
+                <div className="bg-gray-800/50 border-l-4 border-accent-success p-4">
+                  <div className="text-xs font-bold text-gray-400 uppercase tracking-wider mb-3">Your Challenge</div>
                   <div className="text-2xl font-bold text-gray-100 mb-3">
                     {getTargetDisplay()}
                   </div>
-                  <div className="text-base text-gray-500 font-mono">
+                  <div className="text-base text-gray-400 font-mono">
                     {currentRound === 2 && mode === 'SAFE' && `Your R1: ${formatTime(currentTeam.rounds[1].time)}`}
                     {currentRound === 2 && mode === 'RISKY' && `Your R1: ${formatTime(currentTeam.rounds[1].time)} — Beat by 10s`}
                     {currentRound === 2 && mode === 'ALL_IN' && `Fastest R1: ${formatTime(getFastestRound1())}`}
@@ -1321,14 +1370,14 @@ const LiveAction = ({ state, updateTeamRound, setCurrentTeamIndex, setCurrentRou
 
                 {/* Rival Selection */}
                 {(mode === 'CHALLENGE' || mode === 'BLOOD_MATCH') && (
-                  <div className="bg-dark-900/50 border-l-4 border-primary/30 p-4">
-                    <label className="block text-xs font-bold text-gray-600 mb-3 uppercase tracking-wider">
+                  <div className="bg-gray-800/50 border-l-4 border-primary/30 p-4">
+                    <label className="block text-xs font-bold text-gray-400 mb-3 uppercase tracking-wider">
                       {mode === 'BLOOD_MATCH' ? 'Target Team' : 'Select Rival'}
                     </label>
                     <select
                       value={rival}
                       onChange={(e) => setRival(e.target.value)}
-                      className="w-full bg-dark-800 border-l-4 border-dark-700 px-4 py-3 text-gray-100 text-base font-bold focus:outline-none focus:border-primary disabled:opacity-50"
+                      className="w-full bg-gray-700 border-l-4 border-gray-700 px-4 py-3 text-gray-100 text-base font-bold focus:outline-none focus:border-primary disabled:opacity-50"
                       disabled={mode === 'BLOOD_MATCH'}
                     >
                       <option value="">Select Rival</option>
@@ -1352,7 +1401,7 @@ const LiveAction = ({ state, updateTeamRound, setCurrentTeamIndex, setCurrentRou
             )}
 
             {/* Row 3: Timer or Manual Input - FULL WIDTH */}
-            <div className="bg-dark-900/50 border-l-4 border-primary/30 p-6 flex-1 flex flex-col relative overflow-hidden min-h-0">
+            <div className="bg-gray-800/50 border-l-4 border-primary/30 p-6 flex-1 flex flex-col relative overflow-hidden min-h-0">
               <div className="absolute inset-0 bg-gradient-to-br from-primary/5 to-transparent pointer-events-none"></div>
 
               {/* Toggle between Timer and Manual */}
@@ -1362,7 +1411,7 @@ const LiveAction = ({ state, updateTeamRound, setCurrentTeamIndex, setCurrentRou
                   className={`px-6 py-2 text-sm font-bold uppercase tracking-wider transition-all ${
                     useTimer
                       ? 'bg-primary text-dark-950'
-                      : 'bg-dark-800 text-gray-500 border border-dark-700'
+                      : 'bg-gray-700 text-gray-400 border border-gray-700'
                   }`}
                 >
                   USE TIMER
@@ -1372,7 +1421,7 @@ const LiveAction = ({ state, updateTeamRound, setCurrentTeamIndex, setCurrentRou
                   className={`px-6 py-2 text-sm font-bold uppercase tracking-wider transition-all ${
                     !useTimer
                       ? 'bg-primary text-dark-950'
-                      : 'bg-dark-800 text-gray-500 border border-dark-700'
+                      : 'bg-gray-700 text-gray-400 border border-gray-700'
                   }`}
                 >
                   ENTER MANUALLY
@@ -1408,7 +1457,7 @@ const LiveAction = ({ state, updateTeamRound, setCurrentTeamIndex, setCurrentRou
               ) : (
                 // Manual Entry Mode
                 <>
-                  <label className="block text-xs font-bold text-gray-600 mb-4 uppercase tracking-wider text-center relative z-10">Enter Time</label>
+                  <label className="block text-xs font-bold text-gray-400 mb-4 uppercase tracking-wider text-center relative z-10">Enter Time</label>
                   <div className="flex items-center justify-center gap-3 mb-3 relative z-10">
                 <input
                   type="number"
@@ -1417,9 +1466,9 @@ const LiveAction = ({ state, updateTeamRound, setCurrentTeamIndex, setCurrentRou
                   value={minutes}
                   onChange={(e) => setMinutes(e.target.value.slice(0, 1))}
                   placeholder="0"
-                  className="w-24 bg-dark-800 border-l-4 border-dark-700 px-4 py-4 text-5xl font-black font-mono text-primary text-center focus:outline-none focus:border-primary transition-all"
+                  className="w-24 bg-gray-700 border-l-4 border-gray-700 px-4 py-4 text-5xl font-black font-mono text-primary text-center focus:outline-none focus:border-primary transition-all rounded-lg"
                 />
-                <span className="text-4xl font-bold text-gray-600">:</span>
+                <span className="text-4xl font-bold text-gray-400">:</span>
                 <input
                   type="number"
                   min="0"
@@ -1427,9 +1476,9 @@ const LiveAction = ({ state, updateTeamRound, setCurrentTeamIndex, setCurrentRou
                   value={seconds}
                   onChange={(e) => setSeconds(e.target.value.slice(0, 2))}
                   placeholder="00"
-                  className="w-32 bg-dark-800 border-l-4 border-dark-700 px-4 py-4 text-5xl font-black font-mono text-primary text-center focus:outline-none focus:border-primary transition-all"
+                  className="w-32 bg-gray-700 border-l-4 border-gray-700 px-4 py-4 text-5xl font-black font-mono text-primary text-center focus:outline-none focus:border-primary transition-all rounded-lg"
                 />
-                <span className="text-4xl font-bold text-gray-600">.</span>
+                <span className="text-4xl font-bold text-gray-400">.</span>
                 <input
                   type="number"
                   min="0"
@@ -1437,10 +1486,10 @@ const LiveAction = ({ state, updateTeamRound, setCurrentTeamIndex, setCurrentRou
                   value={milliseconds}
                   onChange={(e) => setMilliseconds(e.target.value.slice(0, 2))}
                   placeholder="00"
-                  className="w-32 bg-dark-800 border-l-4 border-dark-700 px-4 py-4 text-5xl font-black font-mono text-primary text-center focus:outline-none focus:border-primary transition-all"
+                  className="w-32 bg-gray-700 border-l-4 border-gray-700 px-4 py-4 text-5xl font-black font-mono text-primary text-center focus:outline-none focus:border-primary transition-all rounded-lg"
                 />
               </div>
-              <div className="text-center text-sm text-gray-500 uppercase tracking-wider relative z-10">
+              <div className="text-center text-sm text-gray-400 uppercase tracking-wider relative z-10">
                 MIN : SEC . MILLISEC
               </div>
                 </>
@@ -1448,20 +1497,20 @@ const LiveAction = ({ state, updateTeamRound, setCurrentTeamIndex, setCurrentRou
             </div>
           </>
         ) : (
-          // Time Trial Rounds (R1/R3) - Single Column
-          <div className="flex flex-col gap-3">
-            {/* Pilot Selection */}
-            <div className="bg-dark-900 border border-dark-800 p-4">
-              <label className="block text-xs font-bold text-gray-600 mb-3 uppercase tracking-wider">Select Pilot</label>
-              <div className="flex gap-2">
+          // Time Trial Rounds (R1/R3) - Grid Layout
+          <div className="grid grid-cols-2 gap-4 h-full">
+            {/* Left: Pilot Selection */}
+            <div className="bg-gray-800 border border-gray-700 p-6 flex flex-col justify-center shadow-lg rounded-xl">
+              <label className="block text-lg font-bold text-gray-400 mb-6 uppercase tracking-wider text-center">Select Pilot</label>
+              <div className="flex flex-col gap-3">
                 {availablePilots.map((p) => (
                   <button
                     key={p}
                     onClick={() => setPilot(p)}
-                    className={`flex-1 px-4 py-3 text-sm font-bold uppercase tracking-wide transition-all ${
+                    className={`px-8 py-6 text-2xl font-bold uppercase tracking-wide transition-all ${
                       pilot === p
-                        ? 'bg-primary text-dark-950'
-                        : 'bg-dark-800 text-gray-500 border border-dark-700 hover:border-primary/50 hover:text-gray-300'
+                        ? 'bg-primary text-white'
+                        : 'bg-gray-700 text-gray-400 border-2 border-gray-700 hover:border-primary/50 hover:text-gray-100'
                     }`}
                   >
                     {p}
@@ -1470,10 +1519,10 @@ const LiveAction = ({ state, updateTeamRound, setCurrentTeamIndex, setCurrentRou
               </div>
             </div>
 
-            {/* Time Input */}
-            <div className="bg-dark-900 border border-dark-800 p-6 flex-1 flex flex-col justify-center">
-              <label className="block text-xs font-bold text-gray-600 mb-4 uppercase tracking-wider text-center">Enter Time</label>
-              <div className="flex items-center justify-center gap-3 mb-3">
+            {/* Right: Time Input */}
+            <div className="bg-gray-800 border border-gray-700 p-6 flex flex-col justify-center shadow-lg rounded-xl">
+              <label className="block text-lg font-bold text-gray-400 mb-6 uppercase tracking-wider text-center">Enter Time</label>
+              <div className="flex items-center justify-center gap-4 mb-4">
                 <input
                   type="number"
                   min="0"
@@ -1481,9 +1530,9 @@ const LiveAction = ({ state, updateTeamRound, setCurrentTeamIndex, setCurrentRou
                   value={minutes}
                   onChange={(e) => setMinutes(e.target.value.slice(0, 1))}
                   placeholder="0"
-                  className="w-20 bg-dark-800 border border-dark-700 px-4 py-4 text-4xl font-black font-mono text-primary text-center focus:outline-none focus:border-primary transition-all"
+                  className="w-28 bg-gray-700 border-2 border-gray-700 px-4 py-6 text-6xl font-black font-mono text-primary text-center focus:outline-none focus:border-primary transition-all rounded-lg"
                 />
-                <span className="text-3xl font-bold text-gray-600">:</span>
+                <span className="text-5xl font-bold text-gray-400">:</span>
                 <input
                   type="number"
                   min="0"
@@ -1491,9 +1540,9 @@ const LiveAction = ({ state, updateTeamRound, setCurrentTeamIndex, setCurrentRou
                   value={seconds}
                   onChange={(e) => setSeconds(e.target.value.slice(0, 2))}
                   placeholder="00"
-                  className="w-28 bg-dark-800 border border-dark-700 px-4 py-4 text-4xl font-black font-mono text-primary text-center focus:outline-none focus:border-primary transition-all"
+                  className="w-36 bg-gray-700 border-2 border-gray-700 px-4 py-6 text-6xl font-black font-mono text-primary text-center focus:outline-none focus:border-primary transition-all rounded-lg"
                 />
-                <span className="text-3xl font-bold text-gray-600">.</span>
+                <span className="text-5xl font-bold text-gray-400">.</span>
                 <input
                   type="number"
                   min="0"
@@ -1501,10 +1550,10 @@ const LiveAction = ({ state, updateTeamRound, setCurrentTeamIndex, setCurrentRou
                   value={milliseconds}
                   onChange={(e) => setMilliseconds(e.target.value.slice(0, 2))}
                   placeholder="00"
-                  className="w-28 bg-dark-800 border border-dark-700 px-4 py-4 text-4xl font-black font-mono text-primary text-center focus:outline-none focus:border-primary transition-all"
+                  className="w-36 bg-gray-700 border-2 border-gray-700 px-4 py-6 text-6xl font-black font-mono text-primary text-center focus:outline-none focus:border-primary transition-all rounded-lg"
                 />
               </div>
-              <div className="text-center text-xs text-gray-500 uppercase tracking-wider">
+              <div className="text-center text-base text-gray-400 uppercase tracking-widest font-bold">
                 MIN : SEC . MILLISEC
               </div>
             </div>

@@ -9,7 +9,16 @@
       "Bash(cat:*)",
       "Bash(netstat:*)",
       "Bash(findstr:*)",
-      "Bash(npm config:*)"
+      "Bash(npm config:*)",
+      "Bash(npm ci:*)",
+      "Bash(npx vite)",
+      "Bash(npm --version:*)",
+      "Bash(set NODE_ENV=development)",
+      "Bash(git remote:*)",
+      "Bash(git add:*)",
+      "Bash(git commit -m \"$\\(cat <<''EOF''\nFix GitHub Pages deployment workflow\n\n- Update workflow name from VitePress to Vite React app\n- Fix command syntax from Windows \\(&\\) to Unix \\(&&\\)\n- Update Node version from 18 to 20\n- Change npm ci to npm install --include=dev to install devDependencies\n- Fix deploy folder path from docs/.vitepress/dist to dronatrix-leaderboard/dist\n- Add base path /dashboard/ to vite.config.js for GitHub Pages\n- Update actions versions to v4\n\n🤖 Generated with [Claude Code]\\(https://claude.com/claude-code\\)\n\nCo-Authored-By: Claude Sonnet 4.5 <noreply@anthropic.com>\nEOF\n\\)\")",
+      "Bash(git commit:*)",
+      "Bash(git push)"
     ]
   }
 }

@@ -40,16 +40,18 @@ function App() {
   };
 
   return (
-    <div className="h-screen flex flex-col bg-dark-950 overflow-hidden">
+    <div className="h-screen flex flex-col bg-gray-900 overflow-hidden">
       {/* Animated Background */}
-      <div className="fixed inset-0 overflow-hidden pointer-events-none opacity-30">
+      <div className="fixed inset-0 overflow-hidden pointer-events-none opacity-20">
         <div className="absolute w-96 h-96 bg-primary/20 rounded-full blur-3xl -top-48 -left-48 animate-pulse"></div>
         <div className="absolute w-96 h-96 bg-accent-purple/20 rounded-full blur-3xl top-1/2 right-0 animate-pulse" style={{animationDelay: '1s'}}></div>
         <div className="absolute w-96 h-96 bg-primary/20 rounded-full blur-3xl bottom-0 left-1/3 animate-pulse" style={{animationDelay: '2s'}}></div>
       </div>
 
-      {/* Header */}
-      <header className="bg-dark-900/90 backdrop-blur-lg border-b-2 border-primary/30 relative z-10">
+      {/* Hover trigger zone at top */}
+      <div className="fixed top-0 left-0 right-0 h-8 z-20 group">
+        {/* Header */}
+        <header className="bg-gray-800/95 backdrop-blur-lg border-b-2 border-primary/30 absolute top-0 left-0 right-0 -translate-y-full group-hover:translate-y-0 transition-transform duration-300 shadow-lg rounded-b-xl">
         <div className="h-full px-8 py-4">
           <div className="flex items-center justify-between mb-4">
             <div className="flex items-center gap-6">
@@ -71,7 +73,7 @@ function App() {
             <div className="flex gap-3">
               <button
                 onClick={toggleFullscreen}
-                className="px-5 py-2.5 bg-dark-800 border border-primary/40 text-primary hover:bg-primary/10 hover:border-primary text-xs font-black uppercase tracking-widest transition-all"
+                className="px-5 py-2.5 bg-gray-700 border border-primary/40 text-primary hover:bg-primary/10 hover:border-primary text-xs font-black uppercase tracking-widest transition-all rounded-lg"
               >
                 {isFullscreen ? '[ EXIT ]' : '[ FULLSCREEN ]'}
               </button>
@@ -81,7 +83,7 @@ function App() {
                     leaderboard.resetCompetition();
                   }
                 }}
-                className="px-5 py-2.5 bg-dark-800 border border-accent-danger/40 text-accent-danger hover:bg-accent-danger/10 hover:border-accent-danger text-xs font-black uppercase tracking-widest transition-all"
+                className="px-5 py-2.5 bg-gray-700 border border-accent-danger/40 text-accent-danger hover:bg-accent-danger/10 hover:border-accent-danger text-xs font-black uppercase tracking-widest transition-all rounded-lg"
               >
                 RESET
               </button>
@@ -94,10 +96,10 @@ function App() {
               <button
                 key={tab.id}
                 onClick={() => setActiveTab(tab.id)}
-                className={`relative px-8 py-3 text-xs font-black tracking-widest transition-all overflow-hidden group ${
+                className={`relative px-8 py-3 text-xs font-black tracking-widest transition-all overflow-hidden group rounded-lg ${
                   activeTab === tab.id
-                    ? 'text-dark-950 bg-primary'
-                    : 'text-gray-400 bg-dark-800/50 border border-dark-700 hover:text-primary hover:border-primary/50'
+                    ? 'text-white bg-primary'
+                    : 'text-gray-400 bg-gray-700 border border-gray-600 hover:text-primary hover:border-primary/50'
                 }`}
               >
                 {activeTab === tab.id && (
@@ -114,6 +116,7 @@ function App() {
           </nav>
         </div>
       </header>
+      </div>
 
       {/* Main Content */}
       <main className="flex-1 overflow-auto relative z-10">

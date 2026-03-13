@@ -39,9 +39,9 @@ const TimeLeaderboard = ({ teams }) => {
               key={round.id}
               initial={{ opacity: 0, y: 20 }}
               animate={{ opacity: 1, y: 0 }}
-              className="bg-dark-800 border border-dark-600 flex flex-col overflow-hidden"
+              className="bg-gray-800 border border-gray-700 flex flex-col overflow-hidden shadow-lg rounded-xl"
             >
-              <div className="bg-dark-700 border-b border-dark-600 px-6 py-3 flex items-center justify-between">
+              <div className="bg-gray-700 border-b border-gray-700 px-6 py-3 flex items-center justify-between">
                 <h2 className="text-sm font-bold text-gray-400 uppercase tracking-wider">
                   {round.label}
                 </h2>
@@ -54,7 +54,7 @@ const TimeLeaderboard = ({ teams }) => {
 
               <div className="flex-1 overflow-auto p-4">
                 {rankedTeams.length === 0 ? (
-                  <div className="flex items-center justify-center h-full text-gray-600 text-sm uppercase tracking-wider">
+                  <div className="flex items-center justify-center h-full text-gray-400 text-sm uppercase tracking-wider">
                     No times recorded
                   </div>
                 ) : (
@@ -67,7 +67,7 @@ const TimeLeaderboard = ({ teams }) => {
                         className={`flex items-center justify-between p-3 transition-colors ${
                           team.time === fastestTime
                             ? 'bg-primary/10 border-l-4 border-l-primary'
-                            : 'bg-dark-700 border-l-4 border-l-transparent hover:bg-dark-600'
+                            : 'bg-gray-700 border-l-4 border-l-transparent hover:bg-gray-600'
                         }`}
                       >
                         <div className="flex items-center gap-4 flex-1">

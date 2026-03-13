@@ -11,13 +11,13 @@ const ModeLeaderboard = ({ teams }) => {
 
   const getModeColor = (round, mode) => {
     if (!mode) return 'text-gray-600';
-    if (round === 2) return ROUND_MODES.ROUND_2[mode]?.color || 'text-gray-400';
-    if (round === 4) return ROUND_MODES.ROUND_4[mode]?.color || 'text-gray-400';
-    return 'text-gray-400';
+    if (round === 2) return ROUND_MODES.ROUND_2[mode]?.color || 'text-gray-600';
+    if (round === 4) return ROUND_MODES.ROUND_4[mode]?.color || 'text-gray-600';
+    return 'text-gray-600';
   };
 
   const getSuccessIndicator = (success) => {
-    if (success === null) return <div className="w-3 h-3 bg-gray-700 rounded"></div>;
+    if (success === null) return <div className="w-3 h-3 bg-gray-400 rounded"></div>;
     return success ? (
       <div className="w-3 h-3 bg-accent-success rounded"></div>
     ) : (
@@ -31,21 +31,21 @@ const ModeLeaderboard = ({ teams }) => {
       <motion.div
         initial={{ opacity: 0, y: 20 }}
         animate={{ opacity: 1, y: 0 }}
-        className="bg-dark-800 border border-dark-600 flex-1 flex flex-col overflow-hidden"
+        className="bg-gray-800 border border-gray-700 flex-1 flex flex-col overflow-hidden shadow-lg rounded-xl"
       >
-        <div className="bg-dark-700 border-b border-dark-600 px-6 py-3">
+        <div className="bg-gray-700 border-b border-gray-700 px-6 py-3">
           <h2 className="text-sm font-bold text-gray-400 uppercase tracking-wider">Round 2 — Declarations</h2>
         </div>
         <div className="overflow-auto flex-1">
           <table className="w-full text-sm">
-            <thead className="sticky top-0 bg-dark-700">
-              <tr className="border-b border-dark-600">
-                <th className="text-left py-2 px-4 text-gray-600 font-semibold text-xs uppercase tracking-wider">Team</th>
-                <th className="text-left py-2 px-4 text-gray-600 font-semibold text-xs uppercase tracking-wider">Pilot</th>
-                <th className="text-left py-2 px-4 text-gray-600 font-semibold text-xs uppercase tracking-wider">Mode</th>
-                <th className="text-left py-2 px-4 text-gray-600 font-semibold text-xs uppercase tracking-wider">Condition</th>
-                <th className="text-center py-2 px-4 text-gray-600 font-semibold text-xs uppercase tracking-wider">Status</th>
-                <th className="text-right py-2 px-4 text-gray-600 font-semibold text-xs uppercase tracking-wider">Points</th>
+            <thead className="sticky top-0 bg-gray-700">
+              <tr className="border-b border-gray-700">
+                <th className="text-left py-2 px-4 text-primary font-semibold text-xs uppercase tracking-wider">Team</th>
+                <th className="text-left py-2 px-4 text-primary font-semibold text-xs uppercase tracking-wider">Pilot</th>
+                <th className="text-left py-2 px-4 text-primary font-semibold text-xs uppercase tracking-wider">Mode</th>
+                <th className="text-left py-2 px-4 text-primary font-semibold text-xs uppercase tracking-wider">Condition</th>
+                <th className="text-center py-2 px-4 text-primary font-semibold text-xs uppercase tracking-wider">Status</th>
+                <th className="text-right py-2 px-4 text-primary font-semibold text-xs uppercase tracking-wider">Points</th>
               </tr>
             </thead>
             <tbody>
@@ -55,7 +55,7 @@ const ModeLeaderboard = ({ teams }) => {
                 const points = team.rounds[2].points;
 
                 return (
-                  <tr key={team.id} className="border-b border-dark-700 hover:bg-dark-700/30 transition-colors">
+                  <tr key={team.id} className="border-b border-gray-700 hover:bg-gray-700/30 transition-colors">
                     <td className="py-3 px-4 font-semibold text-gray-100 uppercase text-xs tracking-wide">{team.name}</td>
                     <td className="py-3 px-4 text-gray-500 text-xs">{team.rounds[2].pilot || '--'}</td>
                     <td className="py-3 px-4">
@@ -95,22 +95,22 @@ const ModeLeaderboard = ({ teams }) => {
         initial={{ opacity: 0, y: 20 }}
         animate={{ opacity: 1, y: 0 }}
         transition={{ delay: 0.05 }}
-        className="bg-dark-800 border border-dark-600 flex-1 flex flex-col overflow-hidden"
+        className="bg-gray-800 border border-gray-700 flex-1 flex flex-col overflow-hidden shadow-lg rounded-xl"
       >
-        <div className="bg-dark-700 border-b border-dark-600 px-6 py-3">
+        <div className="bg-gray-700 border-b border-gray-700 px-6 py-3">
           <h2 className="text-sm font-bold text-gray-400 uppercase tracking-wider">Round 4 — Rival Declarations</h2>
         </div>
         <div className="overflow-auto flex-1">
           <table className="w-full text-sm">
-            <thead className="sticky top-0 bg-dark-700">
-              <tr className="border-b border-dark-600">
-                <th className="text-left py-2 px-4 text-gray-600 font-semibold text-xs uppercase tracking-wider">Team</th>
-                <th className="text-left py-2 px-4 text-gray-600 font-semibold text-xs uppercase tracking-wider">Pilot</th>
-                <th className="text-left py-2 px-4 text-gray-600 font-semibold text-xs uppercase tracking-wider">Mode</th>
-                <th className="text-left py-2 px-4 text-gray-600 font-semibold text-xs uppercase tracking-wider">Rival</th>
-                <th className="text-left py-2 px-4 text-gray-600 font-semibold text-xs uppercase tracking-wider">Condition</th>
-                <th className="text-center py-2 px-4 text-gray-600 font-semibold text-xs uppercase tracking-wider">Status</th>
-                <th className="text-right py-2 px-4 text-gray-600 font-semibold text-xs uppercase tracking-wider">Points</th>
+            <thead className="sticky top-0 bg-gray-700">
+              <tr className="border-b border-gray-700">
+                <th className="text-left py-2 px-4 text-primary font-semibold text-xs uppercase tracking-wider">Team</th>
+                <th className="text-left py-2 px-4 text-primary font-semibold text-xs uppercase tracking-wider">Pilot</th>
+                <th className="text-left py-2 px-4 text-primary font-semibold text-xs uppercase tracking-wider">Mode</th>
+                <th className="text-left py-2 px-4 text-primary font-semibold text-xs uppercase tracking-wider">Rival</th>
+                <th className="text-left py-2 px-4 text-primary font-semibold text-xs uppercase tracking-wider">Condition</th>
+                <th className="text-center py-2 px-4 text-primary font-semibold text-xs uppercase tracking-wider">Status</th>
+                <th className="text-right py-2 px-4 text-primary font-semibold text-xs uppercase tracking-wider">Points</th>
               </tr>
             </thead>
             <tbody>
@@ -122,7 +122,7 @@ const ModeLeaderboard = ({ teams }) => {
                 const points = team.rounds[4].points;
 
                 return (
-                  <tr key={team.id} className="border-b border-dark-700 hover:bg-dark-700/30 transition-colors">
+                  <tr key={team.id} className="border-b border-gray-700 hover:bg-gray-700/30 transition-colors">
                     <td className="py-3 px-4 font-semibold text-gray-100 uppercase text-xs tracking-wide">{team.name}</td>
                     <td className="py-3 px-4 text-gray-500 text-xs">{team.rounds[4].pilot || '--'}</td>
                     <td className="py-3 px-4">
@@ -130,7 +130,7 @@ const ModeLeaderboard = ({ teams }) => {
                         {getModeLabel(4, mode)}
                       </span>
                     </td>
-                    <td className="py-3 px-4 text-gray-400 text-xs uppercase">
+                    <td className="py-3 px-4 text-gray-600 text-xs uppercase">
                       {rivalTeam ? rivalTeam.name : '--'}
                     </td>
                     <td className="py-3 px-4 text-gray-500 text-xs">

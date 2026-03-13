@@ -7,28 +7,28 @@ export default {
   theme: {
     extend: {
       colors: {
-        // Aggressive esports theme - neon and bold
+        // Vibrant orange theme
         primary: {
-          DEFAULT: '#00F0FF', // Cyan neon
-          dark: '#00B8D4',
-          light: '#64FFFF',
+          DEFAULT: '#F97316', // Orange
+          dark: '#EA580C',
+          light: '#FB923C',
         },
         accent: {
           gold: '#FFD700', // Real gold
           silver: '#C0C0C0',
           bronze: '#CD7F32',
-          success: '#00FF88',
-          danger: '#FF0055',
-          warning: '#FFAA00',
-          purple: '#BB00FF',
+          success: '#10B981',
+          danger: '#EF4444',
+          warning: '#F59E0B',
+          purple: '#8B5CF6',
         },
-        dark: {
-          950: '#000000',
-          900: '#0A0A0F',
-          800: '#121218',
-          700: '#1A1A24',
-          600: '#252530',
-          500: '#30303C',
+        light: {
+          50: '#F9FAFB',
+          100: '#F3F4F6',
+          200: '#E5E7EB',
+          300: '#D1D5DB',
+          400: '#9CA3AF',
+          500: '#6B7280',
         }
       },
       fontFamily: {
